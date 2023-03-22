@@ -14,16 +14,11 @@ router.post('/', (req, res) => {
 
         let { phoneNumber, serviceCode, text, sessionId } = req.body
 
-        console.log(phoneNumber)
-
-        console.log(text)
         text = ussdR.ussdRouter(text)
 
         let contact = phoneNumber.slice(4)
 
         let response;
-
-        console.log(text)
 
         //when a customer visits for the same time 
 
@@ -35,19 +30,30 @@ router.post('/', (req, res) => {
                 // if > 0 is a customer
 
                 let customer_name;
+                let attempts;
 
                 data.forEach(el => {
                     customer_name = el["name"]
+                    attempts = el['attempts']
                 });
 
-                if (data.length > 0) {
+                if (attempts < 3) {
 
-                    response = `CON SCBS:)<br> Welcome <b>${customer_name}</b> <br>Enter your pin:`
-                    // customer should login
-                    res.send(response)
+                    if (data.length > 0) {
+
+                        response = `CON SCBS:)<br> Welcome <b>${customer_name}</b> <br>Enter your pin:`
+                        // customer should login
+                        res.send(response)
+                    } else {
+                        response = "END Welcome to SCBS visit our site scbs.co.sz to view our products."
+                        res.send(response)
+                    }
+
                 } else {
-                    response = "END Welcome to SCBS visit our site scbs.co.sz to view our products."
+
+                    response = `END SCBS :) Please note user account has been locked.`
                     res.send(response)
+
                 }
             })
 
@@ -60,19 +66,23 @@ router.post('/', (req, res) => {
 
                 if (data.length > 0) {
 
+                    //reset loggin attempts to zero incase the was a failed login
+                    customer.resetLoginAttempts()
+
                     response = `CON Menu:
                                1. My Products
                                2. Momo Mtn
                                00. Exit
                                `
                     res.send(response)
-                    res.end()
 
                 } else {
 
-
                     //update status of being locked
                     customer.updateFailedLogins(contact)
+
+                    // get loggin attempts
+
 
                     response = `END SCBS:) Failed to login, After 3 attempts your account will be locked.`
                     res.send(response)
@@ -95,8 +105,8 @@ router.post('/', (req, res) => {
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
 
             response = `CON 
-                        1. Get money from Savings
-                        2. Save money to Savings
+                        1. Transfer money from Savings
+                        2. Transfer money to Savings
                         00. Back
                         0. Exit
             `
@@ -127,22 +137,45 @@ router.post('/', (req, res) => {
                         return false
                     })
 
+
+                    activeAccounts = activeAccounts.filter((acc) => {
+
+                        if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
+                            return true
+                        }
+
+                        return false
+
+                    })
+
+
                     // display accounts to the customer
 
                     response = `CON Select Acc No: <br> <span style ="font-size: 13px;">`;
 
                     let count = 0
+                    let accountBalance = 0
+
                     activeAccounts.forEach(el => {
+
+
+                        if (el["accountBalance"] === undefined) {
+                            accountBalance = 0
+                        } else {
+                            accountBalance = el["accountBalance"]
+                        }
+
                         count = count + 1
                         //response += count + '. ' + el["productName"] + `<br>`
-                        response += `` + count + `.  ` + el["accountNo"] + `<b> E ` + el["accountBalance"] + `</b> ` + `<br>`
+                        response += `` + count + `.  ` + el["accountNo"] + `<b> E ` + accountBalance + `</b> ` + `<br>`
                         //response += `Acc:` + el["accountNo"].substring(5, 9) + '<br>'
 
                     });
 
+                    response += `<br>To Transfer -> <b>Acc No./Amount</b><br>`
                     response += `00. Back`
-                    response += `<br>0. Exit`
-                    response += `<br><b>Acc No/Amount</b></span>`
+                    response += `<br>0. Exit </span>`
+
                     res.send(response)
 
                 }).catch(err => {
@@ -175,22 +208,45 @@ router.post('/', (req, res) => {
                         return false
                     })
 
+                    // filter accounts that are needed
+
+                    activeAccounts = activeAccounts.filter((acc) => {
+
+                        if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
+                            return true
+                        }
+
+                        return false
+
+                    })
+
                     // display accounts to the customer
 
                     response = `CON Select Acc No: <br> <span style ="font-size: 13px;">`;
 
+                    let accountBalance = 0
                     let count = 0
                     activeAccounts.forEach(el => {
+
+                        console.log(el["accountBalance"])
+
+                        if (el["accountBalance"] === undefined) {
+                            accountBalance = 0
+                        } else {
+                            accountBalance = el["accountBalance"]
+                        }
+
                         count = count + 1
                         //response += count + '. ' + el["productName"] + `<br>`
-                        response += `` + count + `.  ` + el["accountNo"] + `<b> E ` + el["accountBalance"] + `</b> ` + `<br>`
+                        response += `` + count + `.  ` + el["accountNo"] + `<b> E ` + accountBalance + `</b> ` + `<br>`
                         //response += `Acc:` + el["accountNo"].substring(5, 9) + '<br>'
 
                     });
 
+                    response += `<br>To Transfer -> <b>Acc No./Amount.</b><br>`
                     response += `00. Back`
-                    response += `<br>0. Exit`
-                    response += `<br><b>Acc No/Amount.</b></span>`
+                    response += `<br>0. Exit </span>`
+
                     res.send(response)
 
                 }).catch(err => {
@@ -228,20 +284,22 @@ router.post('/', (req, res) => {
 
                     // display accounts to the customer
 
-                    response = `CON My products: <br> <span style ="font-size: 13px;">`;
+                    response = `CON My products :) <br> <span style ="font-size: 14px;">`;
 
                     let count = 0
                     activeAccounts.forEach(el => {
                         count = count + 1
+
                         //response += count + '. ' + el["productName"] + `<br>`
                         response += el["productName"] + ` ( Acc: ` + el["accountNo"].substring(5, 9) + `)  <br>`
                         //response += `Acc:` + el["accountNo"].substring(5, 9) + '<br>'
 
                     });
 
+                    response += `<br>Enter <b>Acc No.</b> to view details`
                     response += `<br>00. Back`
-                    response += `<br>0. Exit`
-                    response += `<br>Enter <b>Acc No.</b> to view account details</span>`
+                    response += `<br>0. Exit</span>`
+
                     res.send(response)
 
                 }).catch(err => {
@@ -302,7 +360,7 @@ router.post('/', (req, res) => {
                         this.accountBalance = 0
                     }
 
-                    response = `CON Account Details<br>`
+                    response = `CON Account Details :)<br>`
                     response += `Total deposits: E ` + this.totaldeposists + `<br>`
                     response += `Total withdrawals: E ` + this.totalWithdrawals + `<br>`
                     response += `Total Interest: E ` + this.totalInterestPosted + `<br><br>`

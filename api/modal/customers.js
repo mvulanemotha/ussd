@@ -39,7 +39,7 @@ let registerNewUser = async (username, password) => {
 let login = async (username, password) => {
 
     try {
-       
+
         return await new Promise((resolve, reject) => {
 
             let query = "select * from customers where username = ? and password = ?"
@@ -68,7 +68,9 @@ let isCustomer = async (contact) => {
 
         return await new Promise((resolve, reject) => {
 
-            let query = 'select * from clientsnumbers where contact = ?';
+            //let query = 'select * from clientsnumbers where contact = ? limit 1';
+
+            let query = 'select clNos.name as name, cust.loginattempts as attempts from clientsnumbers as clNos inner join customers as cust on clNos.contact = cust.username where clNos.contact = ? limit 1'
 
             db.query(query, [contact], (err, result) => {
 
@@ -99,7 +101,7 @@ let updateFailedLogins = async (contact) => {
 
             db.query(query, [contact], (err, result) => {
 
-                if(err){
+                if (err) {
                     return reject(err)
                 }
 
@@ -116,5 +118,32 @@ let updateFailedLogins = async (contact) => {
 }
 
 
+// reset login attemots incase login attempts were made which failed
 
-module.exports = { registerNewUser, isCustomer, login , updateFailedLogins  }
+let resetLoginAttempts = async (contact) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = 'update customers set loginattempts = 0 where username = ? limit 1'
+
+            db.query(query, [contact], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+            
+            })
+        })
+
+    } catch (error) {
+
+    }
+
+}
+
+
+module.exports = { registerNewUser, isCustomer, login, updateFailedLogins , resetLoginAttempts }
