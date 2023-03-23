@@ -15,9 +15,9 @@ router.post('/', (req, res) => {
         let { phoneNumber, serviceCode, text, sessionId } = req.body
 
         text = ussdR.ussdRouter(text)
-
+        
         let contact = phoneNumber.slice(4)
-
+        
         let response;
 
         //when a customer visits for the same time 
@@ -56,7 +56,7 @@ router.post('/', (req, res) => {
 
                 }
             })
-
+        
 
         } else if ((text !== '') && (text.indexOf('*') === -1)) {
 
@@ -67,8 +67,8 @@ router.post('/', (req, res) => {
                 if (data.length > 0) {
 
                     //reset loggin attempts to zero incase the was a failed login
-                    customer.resetLoginAttempts()
-
+                    customer.resetLoginAttempts(contact)
+                    
                     response = `CON Menu:
                                1. My Products
                                2. Momo Mtn
@@ -147,7 +147,7 @@ router.post('/', (req, res) => {
                         return false
 
                     })
-
+                    
 
                     // display accounts to the customer
 
@@ -299,67 +299,67 @@ router.post('/', (req, res) => {
                     response += `<br>Enter <b>Acc No.</b> to view details`
                     response += `<br>00. Back`
                     response += `<br>0. Exit</span>`
-
+                    
                     res.send(response)
-
+                
                 }).catch(err => {
                     console.log(err)
                 })
             })
-
-
+        
+        
         } else if (text.indexOf('*1*') !== -1) {  // view account deatails
-
+            
             try {
-
+                
                 let totaldeposists = 0
                 let totalFeeCharge = 0
                 let totalWithdrawals = 0
                 let totalInterestPosted = 0
-
-                account.accountDetails(text.substring(9)).then(data => {
-
+                
+                account.accountDetails(text.slice(-4)).then(data => {
+                    
                     console.log(data.data.summary)
-
+                    
                     //totalWithdrawals = data.data.summary.totalWithdrawals
-
+                    
                     totaldeposists = +data.data.summary.totalDeposits || 0
                     totalFeeCharge = +data.data.summary.totalFeeCharge || 0
                     totalWithdrawals = +data.data.summary.totalWithdrawals || 0
                     totalInterestPosted = +data.data.summary.totalInterestPosted || 0
-
-
-
+                    
+                    
+                    
                     if (data.data["savingsProductName"].indexOf("Fixed Period Shares") >= 0) {
                         this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge)).toFixed(2)
                     } else {
                         this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge) - (totalWithdrawals)).toFixed(2)
                     }
-
+                    
                     //this.accountBalance = (+(response["summary"]["accountBalance"]) + +(response["summary"]["totalInterestPosted"]) - +(response["summary"]["totalWithdrawals"])).toFixed(2)
-
+                    
                     this.totaldeposists = data.data["summary"]["totalDeposits"]
                     this.totalCharge = data.data["summary"]["totalFeeCharge"]
                     this.totalInterestPosted = data.data["summary"]["totalInterestPosted"]
                     this.interest = data.data["nominalAnnualInterestRate"]
-
-
+                    
+                    
                     if (this.totaldeposists === undefined) {
                         this.totaldeposists = 0
                     }
-
+                    
                     if (this.totalWithdrawals === undefined) {
                         this.totalWithdrawals = 0
                     }
-
+                    
                     if (this.totalInterestPosted === undefined) {
                         this.totalInterestPosted = 0
                     }
-
+                    
                     if (this.accountBalance === undefined) {
                         this.accountBalance = 0
                     }
-
+                    
                     response = `CON Account Details :)<br>`
                     response += `Total deposits: E ` + this.totaldeposists + `<br>`
                     response += `Total withdrawals: E ` + this.totalWithdrawals + `<br>`
@@ -367,10 +367,10 @@ router.post('/', (req, res) => {
                     response += `Balance: E ` + this.accountBalance + `<br><br>`
                     response += `00. Back<br>`
                     response += `0. Exit`
-
+                    
                     res.send(response)
                     res.end()
-
+                
                 })
             } catch (err) {
                 console.log(err)
