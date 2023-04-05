@@ -15,9 +15,9 @@ router.post('/', (req, res) => {
         let { phoneNumber, serviceCode, text, sessionId } = req.body
 
         text = ussdR.ussdRouter(text)
-        
+
         let contact = phoneNumber.slice(4)
-        
+
         let response;
 
         //when a customer visits for the same time 
@@ -32,43 +32,44 @@ router.post('/', (req, res) => {
                 let customer_name;
                 let attempts;
 
-                data.forEach(el => {
-                    customer_name = el["name"]
-                    attempts = el['attempts']
-                });
+                // checking if there we recods found in the database
+                if (data.length > 0) {
 
-                if (attempts < 3) {
+                    data.forEach(el => {
+                        customer_name = el["name"]
+                        attempts = el['attempts']
+                    });
 
-                    if (data.length > 0) {
+                    if (attempts < 3) {
 
                         response = `CON SCBS:)<br> Welcome <b>${customer_name}</b> <br>Enter your pin:`
                         // customer should login
                         res.send(response)
                     } else {
-                        response = "END Welcome to SCBS visit our site scbs.co.sz to view our products."
+
+                        response = `END SCBS :) Please note user account has been locked.`
                         res.send(response)
                     }
 
                 } else {
 
-                    response = `END SCBS :) Please note user account has been locked.`
+                    response = "END Welcome to SCBS please contact 24171975 for more info."
                     res.send(response)
 
                 }
             })
-        
 
         } else if ((text !== '') && (text.indexOf('*') === -1)) {
-
+            
             //auth logged in user
-
+            
             customer.login(contact, text).then(data => {
 
                 if (data.length > 0) {
 
-                    //reset loggin attempts to zero incase the was a failed login
+                    //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
-                    
+
                     response = `CON Menu:
                                1. My Products
                                2. Momo Mtn
@@ -147,7 +148,7 @@ router.post('/', (req, res) => {
                         return false
 
                     })
-                    
+
 
                     // display accounts to the customer
 
@@ -299,67 +300,67 @@ router.post('/', (req, res) => {
                     response += `<br>Enter <b>Acc No.</b> to view details`
                     response += `<br>00. Back`
                     response += `<br>0. Exit</span>`
-                    
+
                     res.send(response)
-                
+
                 }).catch(err => {
                     console.log(err)
                 })
             })
-        
-        
+
+
         } else if (text.indexOf('*1*') !== -1) {  // view account deatails
-            
+
             try {
-                
+
                 let totaldeposists = 0
                 let totalFeeCharge = 0
                 let totalWithdrawals = 0
                 let totalInterestPosted = 0
-                
+
                 account.accountDetails(text.slice(-4)).then(data => {
-                    
+
                     console.log(data.data.summary)
-                    
+
                     //totalWithdrawals = data.data.summary.totalWithdrawals
-                    
+
                     totaldeposists = +data.data.summary.totalDeposits || 0
                     totalFeeCharge = +data.data.summary.totalFeeCharge || 0
                     totalWithdrawals = +data.data.summary.totalWithdrawals || 0
                     totalInterestPosted = +data.data.summary.totalInterestPosted || 0
-                    
-                    
-                    
+
+
+
                     if (data.data["savingsProductName"].indexOf("Fixed Period Shares") >= 0) {
                         this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge)).toFixed(2)
                     } else {
                         this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge) - (totalWithdrawals)).toFixed(2)
                     }
-                    
+
                     //this.accountBalance = (+(response["summary"]["accountBalance"]) + +(response["summary"]["totalInterestPosted"]) - +(response["summary"]["totalWithdrawals"])).toFixed(2)
-                    
+
                     this.totaldeposists = data.data["summary"]["totalDeposits"]
                     this.totalCharge = data.data["summary"]["totalFeeCharge"]
                     this.totalInterestPosted = data.data["summary"]["totalInterestPosted"]
                     this.interest = data.data["nominalAnnualInterestRate"]
-                    
-                    
+
+
                     if (this.totaldeposists === undefined) {
                         this.totaldeposists = 0
                     }
-                    
+
                     if (this.totalWithdrawals === undefined) {
                         this.totalWithdrawals = 0
                     }
-                    
+
                     if (this.totalInterestPosted === undefined) {
                         this.totalInterestPosted = 0
                     }
-                    
+
                     if (this.accountBalance === undefined) {
                         this.accountBalance = 0
                     }
-                    
+
                     response = `CON Account Details :)<br>`
                     response += `Total deposits: E ` + this.totaldeposists + `<br>`
                     response += `Total withdrawals: E ` + this.totalWithdrawals + `<br>`
@@ -367,10 +368,10 @@ router.post('/', (req, res) => {
                     response += `Balance: E ` + this.accountBalance + `<br><br>`
                     response += `00. Back<br>`
                     response += `0. Exit`
-                    
+
                     res.send(response)
                     res.end()
-                
+
                 })
             } catch (err) {
                 console.log(err)
