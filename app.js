@@ -1,14 +1,12 @@
 const express = require('express')
 const app = express();
-const morgan = require('morgan');
 const ussd = require('./api/routes/index')
-
-var bodyParser = require('body-parser')
+const bodyParser = require('body-parser')
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: false }))
 
-app.use(morgan('dev'))
+//app.use(morgan('dev'))
 
 /*
 app.use((req, res, next) => {
@@ -20,17 +18,16 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Headers', '*');
     res.header('Access-Control-Allow-Headers', ' Content-Type');
     
-    
     if ('OPTIONS' == req.method) {
         res.sendStatus(200);
     } else {
         next();
     }
 })
-
 */
 
-app.use(express.json())
+
+//app.use(express.json())
 
 app.use('/ussd', ussd)
 
