@@ -3,20 +3,20 @@ const app = express();
 const ussd = require('./api/routes/index')
 const bodyParser = require('body-parser')
 
-app.use(bodyParser.json())
+//app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
 //app.use(morgan('dev'))
 
 
 app.use((req, res, next) => {
-    
-    
-    res.header('Access-Control-Allow-Origin', '*')
-    res.header('Access-Control-Allow-Methods', 'POST', 'GET', 'PUT', 'DELETE');
-    //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.header('Access-Control-Allow-Headers', '*');
-    //res.header('Access-Control-Allow-Headers', ' Content-Type');
+
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With,Content-type,Accept,X-Access-Token,X-Key");
+
+    // Set response contenttype
+    res.contentType('text/plain');
     
     if ('OPTIONS' == req.method) {
         res.sendStatus(200);
@@ -24,8 +24,6 @@ app.use((req, res, next) => {
         next();
     }
 })
-
-
 
 app.use(express.json())
 

@@ -8,9 +8,6 @@ const ussdR = require('ussd-router')
 //REGISTER IF NOT REGISTRED
 router.post('/', (req, res) => {
     
-    //console.log(req.body)
-    res.set('Content-Type: text/plain');
-
     try {
         
         let { phoneNumber, serviceCode, text, sessionId } = req.body
@@ -43,20 +40,22 @@ router.post('/', (req, res) => {
                     if (attempts < 3) {
                         
                         response = `CON SCBS:)<br> Welcome <b>${customer_name}</b> <br>Enter your pin:`
-                        // customer should login
+                        res.send(response)
                     } else {
                         
                         response = `END SCBS :) Please note user account has been locked.`
+                        res.send(response)
                     }
                 
                 } else {
-                    
                     response = "END Welcome to SCBS please contact 24171975 for more info."
-                    res.send(response)
+                    res.send(response)        
                 }
             })
         
-        } else if ((text !== "") && (text.indexOf('*') === -1)) {
+        }
+        
+        if ((text !== "") && (text.indexOf('*') === -1)) {
             
             //auth logged in user
             
@@ -72,7 +71,7 @@ router.post('/', (req, res) => {
                                2. Momo Mtn
                                00. Exit
                                `
-                
+                    res.send(response)
                 } else {
                     
                     //update status of being locked
@@ -80,20 +79,24 @@ router.post('/', (req, res) => {
                     
                     // get loggin attempts
                     response = `END SCBS:) Failed to login, After 3 attempts your account will be locked.`
-                
+                    res.send(response)
                 }
             })
         
         
-        } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
+        }
+        
+        if (text == '1*0') { //Have viewed my products now i want to view see my menu again
             
             response = `CON Menu:
                                1. My Products
                                2. Momo Mtn
                                00. Exit
                                `
- 
-        } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
+            res.send(response)
+        }
+        
+        if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
             
             response = `CON 
                         1. Transfer money from Savings
@@ -101,9 +104,11 @@ router.post('/', (req, res) => {
                         00. Back
                         0. Exit
             `
-            //res.send(response)
+            res.send(response)
         
-        } else if (text.indexOf('2*1') !== -1) { // get money from savings account to mobile money
+        }
+        
+        if (text.indexOf('2*1') !== -1) { // get money from savings account to mobile money
             
             
             var activeAccounts;
@@ -166,14 +171,16 @@ router.post('/', (req, res) => {
                     response += `00. Back`
                     response += `<br>0. Exit </span>`
                     
-                    //res.send(response)
+                    res.send(response)
                 
                 }).catch(err => {
                     console.log(err)
                 })
             })
         
-        } else if ((text.indexOf('*2*2') !== -1)) {  // from momo account to savings account
+        }
+        
+        if ((text.indexOf('*2*2') !== -1)) {  // from momo account to savings account
             
             
             var activeAccounts;
@@ -237,7 +244,7 @@ router.post('/', (req, res) => {
                     response += `00. Back`
                     response += `<br>0. Exit </span>`
                     
-                    //res.send(response)
+                    res.send(response)
                 
                 }).catch(err => {
                     console.log(err)
@@ -245,7 +252,9 @@ router.post('/', (req, res) => {
             })
         
         
-        } else if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1)) {   //// if 1 from menu is selected
+        }
+        
+        if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1)) {   //// if 1 from menu is selected
             
             // get client products
             
@@ -290,7 +299,7 @@ router.post('/', (req, res) => {
                     response += `<br>00. Back`
                     response += `<br>0. Exit</span>`
                     
-                    //res.send(response)
+                    res.send(response)
                 
                 }).catch(err => {
                     console.log(err)
@@ -298,7 +307,9 @@ router.post('/', (req, res) => {
             })
         
         
-        } else if (text.indexOf('*1*') !== -1) {  // view account deatails
+        }
+        
+        if (text.indexOf('*1*') !== -1) {  // view account deatails
             
             try {
                 
@@ -308,8 +319,6 @@ router.post('/', (req, res) => {
                 let totalInterestPosted = 0
                 
                 account.accountDetails(text.slice(-4)).then(data => {
-                    
-                    console.log(data.data.summary)
                     
                     //totalWithdrawals = data.data.summary.totalWithdrawals
                     
@@ -358,17 +367,14 @@ router.post('/', (req, res) => {
                     response += `00. Back<br>`
                     response += `0. Exit`
                     
-                    //res.send(response)
+                    res.send(response)
                 })
             } catch (err) {
                 console.log(err)
             }
         }
-     
-
-     /* res.set('Content-Type: text/plain');
-     res.status(200).send(response) */
-
+        
+        //res.status(200).send(response)
     
     } catch (err) {
         console.log(err)
