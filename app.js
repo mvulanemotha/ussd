@@ -8,7 +8,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 //app.use(morgan('dev'))
 
-/*
+
 app.use((req, res, next) => {
     
     
@@ -16,7 +16,7 @@ app.use((req, res, next) => {
     res.header('Access-Control-Allow-Methods', 'POST', 'GET', 'PUT', 'DELETE');
     //res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
     res.header('Access-Control-Allow-Headers', '*');
-    res.header('Access-Control-Allow-Headers', ' Content-Type');
+    //res.header('Access-Control-Allow-Headers', ' Content-Type');
     
     if ('OPTIONS' == req.method) {
         res.sendStatus(200);
@@ -24,10 +24,10 @@ app.use((req, res, next) => {
         next();
     }
 })
-*/
 
 
-//app.use(express.json())
+
+app.use(express.json())
 
 app.use('/ussd', ussd)
 

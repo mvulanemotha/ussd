@@ -8,9 +8,8 @@ const ussdR = require('ussd-router')
 //REGISTER IF NOT REGISTRED
 router.post('/', (req, res) => {
     
-    // console.log(req.body)
-    
-    
+    //console.log(req.body)
+    res.set('Content-Type: text/plain');
 
     try {
         
@@ -20,7 +19,7 @@ router.post('/', (req, res) => {
         
         let contact = phoneNumber.slice(4)
         
-        let response;
+        let response = ""
         
         //when a customer visits for the same time 
         
@@ -29,7 +28,6 @@ router.post('/', (req, res) => {
             customer.isCustomer(contact).then((data) => {
                 
                 // checking if we have any records in the database
-                // if > 0 is a customer
                 
                 let customer_name;
                 let attempts;
@@ -54,6 +52,7 @@ router.post('/', (req, res) => {
                 } else {
                     
                     response = "END Welcome to SCBS please contact 24171975 for more info."
+                    res.send(response)
                 }
             })
         
@@ -367,8 +366,8 @@ router.post('/', (req, res) => {
         }
      
 
-     res.set('Content-Type: text/plain');
-     res.send(response)
+     /* res.set('Content-Type: text/plain');
+     res.status(200).send(response) */
 
     
     } catch (err) {
