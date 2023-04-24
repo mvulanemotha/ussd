@@ -6,16 +6,26 @@ const ussdR = require('ussd-router')
 
 
 //REGISTER IF NOT REGISTRED
-router.post('/', (req, res) => {
+router.get('/', (req, res) => {
+    
+    let me = "CON SCBS"
+    
+    //res.writeHead(200 ,  { "content-type" : "text/plain" })
+    res.send(me)
+    res.end();
 
+    /*
     try {
+        
+        
+        
 
         let { phoneNumber, serviceCode, text, sessionId } = req.body
 
         text = ussdR.ussdRouter(text)
 
         let contact = phoneNumber.slice(4)
-
+        
         let response = ""
         
         if (text == "") {
@@ -378,10 +388,12 @@ router.post('/', (req, res) => {
         }
 
         //res.status(200).send(response)
-
+    
     } catch (err) {
         console.log(err)
     }
+
+    */
 })
 
 /*
