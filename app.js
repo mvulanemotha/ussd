@@ -16,11 +16,11 @@ app.use(morgan('dev'))
 app.use((req, res, next) => {
 
     res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.header("Access-Control-Allow-Methods", "GET,OPTIONS");
     res.header("Access-Control-Allow-Headers", "X-Requested-With,Content-type,Accept,X-Access-Token,X-Key");
-
+    
     // Set response contenttype
-    res.contentType('text/plain');
+    //res.contentType('text/plain');
     
     if ('OPTIONS' == req.method) {
         res.sendStatus(200);
