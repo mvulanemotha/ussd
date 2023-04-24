@@ -2,34 +2,11 @@ const express = require('express')
 const app = express();
 const ussd = require('./api/routes/index')
 const bodyParser = require('body-parser')
-const morgan = require('morgan');
-//var cors = require('cors')
 
-
-
-//app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 
-app.use(morgan('dev'))
-
-app.use((req, res, next) => {
-
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET,OPTIONS");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With,Content-type,Accept,X-Access-Token,X-Key");
-    
-    // Set response contenttype
-    //res.contentType('text/plain');
-    
-    if ('OPTIONS' == req.method) {
-        res.sendStatus(200);
-    } else {
-        next();
-    }
-})
-
-app.use(express.json())
+//app.use(express.json())
 
 app.use('/ussd', ussd)
 

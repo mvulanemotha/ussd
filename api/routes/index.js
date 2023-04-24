@@ -66,14 +66,14 @@ router.get('/', async (req, res) => {
                                1. My Products
                                2. Momo Mtn
                                00. Exit
-                               `
+                               `;
                 } else {
 
                     //update status of being locked
                     customer.updateFailedLogins(contact)
 
                     // get loggin attempts
-                    response = `END SCBS:) Failed to login, After 3 attempts your account will be locked.`
+                    response = `END SCBS:) Failed to login, After 3 attempts your account will be locked.`;
                 }
             })
 
@@ -84,7 +84,7 @@ router.get('/', async (req, res) => {
                                1. My Products
                                2. Momo Mtn
                                00. Exit
-                               `
+                               `;
 
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
 
@@ -93,7 +93,7 @@ router.get('/', async (req, res) => {
                         2. Transfer money to Savings
                         00. Back
                         0. Exit
-            `
+                        `;
         }
 
         if (text.indexOf('2*1') !== -1) { // get money from savings account to mobile money
@@ -153,9 +153,9 @@ router.get('/', async (req, res) => {
 
                     });
 
-                    response += `<br>To Transfer -> <b>Acc No./Amount</b><br>`
-                    response += `00. Back`
-                    response += `<br>0. Exit </span>`
+                    response += `<br>To Transfer -> <b>Acc No./Amount</b><br>`;
+                    response += `00. Back`;
+                    response += `<br>0. Exit </span>`;
 
                 }).catch(err => {
                     console.log(err)
@@ -216,14 +216,14 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += `` + count + `.  ` + el["accountNo"] + `<b> E ` + accountBalance + `</b> ` + `<br>`
+                        response += `` + count + `.  ` + el["accountNo"] + `<b> E ` + accountBalance + `</b> ` + `<br>`;
 
 
                     });
 
-                    response += `<br>To Transfer -> <b>Acc No./Amount.</b><br>`
-                    response += `00. Back`
-                    response += `<br>0. Exit </span>`
+                    response += `<br>To Transfer -> <b>Acc No./Amount.</b><br>`;
+                    response += `00. Back`;
+                    response += `<br>0. Exit </span>`;
 
 
                 }).catch(err => {
@@ -250,7 +250,7 @@ router.get('/', async (req, res) => {
 
                 //get account numbers
 
-               await account.clientsProducts(clientNumber).then(resAccounts => {
+                await account.clientsProducts(clientNumber).then(resAccounts => {
 
                     activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
 
@@ -271,9 +271,9 @@ router.get('/', async (req, res) => {
 
                     });
 
-                    response += `<br>Enter <b>Acc No.</b> to view details`
-                    response += `<br>00. Back`
-                    response += `<br>0. Exit</span>`
+                    response += `<br>Enter <b>Acc No.</b> to view details`;
+                    response += `<br>00. Back`;
+                    response += `<br>0. Exit</span>`;
 
                 }).catch(err => {
                     console.log(err)
@@ -292,7 +292,7 @@ router.get('/', async (req, res) => {
                 let totalWithdrawals = 0
                 let totalInterestPosted = 0
 
-               await account.accountDetails(text.slice(-4)).then(data => {
+                await account.accountDetails(text.slice(-4)).then(data => {
 
                     //totalWithdrawals = data.data.summary.totalWithdrawals
 
@@ -339,15 +339,15 @@ router.get('/', async (req, res) => {
                                     Total Interest: E ${this.totalInterestPosted} <br><br>
                                     Balance: E ${this.accountBalance}<br><br>
                                     00. Back<br>
-                                    0. Exit`
+                                    0. Exit`;
                 })
             } catch (err) {
                 console.log(err)
             }
         }
-        
-        res.set('Content-Type : text/plain')
-        res.send(response)
+
+        res.set("Content-Type: text/plain");
+        res.send(response);
 
     } catch (err) {
         console.log(err)
