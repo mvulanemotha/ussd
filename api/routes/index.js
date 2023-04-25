@@ -9,7 +9,9 @@ const ussdR = require('ussd-router')
 router.get('/', async (req, res) => {
 
     var response = ``
-
+    let sessionId = req.query.sessionID
+    
+    /*
     try {
 
         let phoneNumber = req.query.Msisdn
@@ -345,13 +347,22 @@ router.get('/', async (req, res) => {
                 console.log(err)
             }
         }
-
-        res.set("Content-Type: text/plain");
-        res.send(response);
+        
+        //res.set("Content-Type: text/plain");
+        
+        res.status(200).send(response);
 
     } catch (err) {
         console.log(err)
-    }
+    } */
+
+   
+   //$resp = array(“sessionId”=>$sessionId,”message”=> $response,”ContinueSession”=>$ContinueSession);
+   
+   let resp = { "sessionId": sessionId , "message" : "Testing" , "ContinueSession" : 1 }
+   
+   res.json(resp)
+
 })
 
 module.exports = router
