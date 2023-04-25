@@ -7,20 +7,8 @@ const ussdR = require('ussd-router')
 
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
-    
-    var response = `Hello Swaziland`
-    
 
-    res.writeHead(200, {
-        'Freeflow': 'FC',
-        'Content-Type': 'text/plain'
-    });
-    
-    res.write(response)
-    res.end();
-    //res.send(response);
-
-    /*
+    var response = ``;
 
     try {
 
@@ -53,7 +41,7 @@ router.get('/', async (req, res) => {
 
                     if (attempts < 3) {
 
-                        response = `SCBS:)<br> Welcome ${customer_name} <br>Enter your pin:`;
+                        response = `SCBS :)<br> Welcome ${customer_name} <br>Enter your pin:`;
                     } else {
                         response = `SCBS :) Please note user account has been locked.`;
                     }
@@ -344,7 +332,7 @@ router.get('/', async (req, res) => {
                     if (this.accountBalance === undefined) {
                         this.accountBalance = 0
                     }
-                    
+
                     response = `    Account Details :)<br>
                                     Total deposits: E  ${this.totaldeposists} <br>
                                     Total withdrawals: E ${this.totalWithdrawals} <br>
@@ -359,15 +347,19 @@ router.get('/', async (req, res) => {
         }
 
 
+        res.writeHead(200, {
+            'Freeflow': 'FC',
+            'Content-Type': 'text/plain'
+        });
 
-      
+        res.write(response)
+        res.end();
+
 
     } catch (err) {
         console.log(err)
     }
- 
 
-   */
 })
 
 module.exports = router
