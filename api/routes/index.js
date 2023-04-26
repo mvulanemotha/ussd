@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
 
         // if newrequest === 0 then its a new request
         // add new session in database
-
+        
         if (newrequest === "1") {
 
             await customer.addNewsession(phoneNumber.slice(3), text, sessionId)
@@ -82,21 +82,21 @@ router.get('/', async (req, res) => {
 
                     if (attempts < 3) {
 
-                        response = `SCBS :)<br> Welcome ${customer_name} <br>Enter your pin:`;
+                        response = `SCBS :)<br>Welcome ${customer_name}<br>Enter your pin:`;
                         closeOropenSession = 1
                     } else {
-                        response = `SCBS :) Please note user account has been locked.`;
+                        response = `SCBS :)Please note user account has been locked.`;
                         closeOropenSession = 0
                     }
-
+                
                 } else {
                     response = `Welcome to SCBS please contact 24171975 for more info.`;
                     closeOropenSession = 0
                 }
             })
-
+        
         } else if ((text !== "") && (text.indexOf('*') === -1)) {
-
+            
             //auth logged in user
 
             await customer.login(contact, text).then(data => {
@@ -106,39 +106,30 @@ router.get('/', async (req, res) => {
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
 
-                    response = `Menu:
-                                1. My Products
-                                2. Momo Mtn
-                                00. Exit`;
+                    response = "Menu:<br>1. My Products<br>2. Momo Mtn<br>00. Exit";
                     closeOropenSession = 1
-
+                
                 } else {
-
+                    
                     //update status of being locked
                     customer.updateFailedLogins(contact)
-
+                    
                     // get loggin attempts
                     response = `SCBS:) Failed to login, After 3 attempts your account will be locked.`;
                     closeOropenSession = 0
                 }
             })
-
-
+        
+        
         } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
-
-            response = `Menu:
-                        1. My Products
-                        2. Momo Mtn
-                        00. Exit`;
+            
+            response = "Menu:<br><br>1. My Products<br>2. Momo Mtn<br>00. Exit";
             
             closeOropenSession = 1
         
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
             
-            response = `1. Transfer money from Savings
-                        2. Transfer money to Savings
-                        00. Back
-                        0. Exit`;
+            response = "1. Transfer money from Savings <br> 2. Transfer money to Savings <br> 00. Back<br> 0. Exit";
             closeOropenSession = 1
         }
         
@@ -179,7 +170,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = `Select Acc No: <br> <span style ="font-size: 13px;">`;
+                    response = "Select Acc No: <br>";
 
                     let count = 0
                     let accountBalance = 0
@@ -198,9 +189,9 @@ router.get('/', async (req, res) => {
 
                     });
 
-                    response += `<br>To Transfer -> <b>Acc No./Amount</b><br>`;
-                    response += `00. Back`;
-                    response += `<br>0. Exit </span>`;
+                    response += "<br>To Transfer -> <b>Acc No./Amount</b><br>";
+                    response += "00. Back";
+                    response += "<br>0. Exit </span>";
 
                     closeOropenSession = 1
 
@@ -250,8 +241,8 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = `Select Acc No: <br> <span style ="font-size: 13px;">`;
-
+                    response = "Select Acc No: <br>";
+                    
                     let accountBalance = 0
                     let count = 0
                     activeAccounts.forEach(el => {
@@ -268,9 +259,9 @@ router.get('/', async (req, res) => {
 
                     });
 
-                    response += `<br>To Transfer -> <b>Acc No./Amount.</b><br>`;
-                    response += `00. Back`;
-                    response += `<br>0. Exit </span>`;
+                    response += "<br>To Transfer -> <b>Acc No./Amount.</b><br>";
+                    response += "00. Back";
+                    response += "<br>0. Exit </span>";
 
                     closeOropenSession = 1
 
@@ -310,7 +301,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = `My products :) <br> <span style ="font-size: 14px;">`;
+                    response = "My products :) <br>";
 
                     let count = 0
                     activeAccounts.forEach(el => {
@@ -319,9 +310,9 @@ router.get('/', async (req, res) => {
 
                     });
 
-                    response += `<br>Enter <b>Acc No.</b> to view details`;
-                    response += `<br>00. Back`;
-                    response += `<br>0. Exit</span>`;
+                    response += "<br>Enter <b>Acc No.</b> to view details";
+                    response += "<br>00. Back";
+                    response += "<br>0. Exit";
 
                     closeOropenSession = 1
 
