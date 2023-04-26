@@ -135,7 +135,7 @@ let resetLoginAttempts = async (contact) => {
                 }
 
                 return resolve(result)
-            
+
             })
         })
 
@@ -145,5 +145,85 @@ let resetLoginAttempts = async (contact) => {
 
 }
 
+// hangle sessions 
 
-module.exports = { registerNewUser, isCustomer, login, updateFailedLogins , resetLoginAttempts }
+let getSessionDeatails = async (phone, session) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = " select * from sessions where phone = ?  and sessionId = ? limit 1"
+
+            db.query(query, [phone, session], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (error) {
+
+    }
+
+}
+
+// create a new session for a new user to trace his/her activity
+
+let addNewsession = async (phone, input, sessionId) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "insert into sessions(phone,sessionId,input) select ?,?,?"
+            
+            db.query(query, [phone, sessionId, input], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+                return resolve(result)
+            })
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+// update ongoing session
+
+let updateInputSession = async (phone, session, input) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "update sessions set input = ? where sessionId = ?  and phone = ? limit 1"
+
+            db.query(query, [input, session, phone], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+module.exports = { addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }

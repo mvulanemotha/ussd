@@ -8,20 +8,58 @@ const ussdR = require('ussd-router')
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = ``;
-
+    var response = `Dev in action`;
 
     try {
+
 
         let phoneNumber = req.query.Msisdn
         let text = req.query.input
         let sessionId = req.query.sessionID
+        let newrequest = req.query.newrequest
+
+        let dbText = ""
+
+        // get functions to help track our progress
+
+        //getSessionDeatails, updateInputSession, addNewsession
+
+
+        // if newrequest === 0 then its a new request
+        // add new session in database
+
+        if (newrequest === "1") {
+
+            await customer.addNewsession(phoneNumber.slice(3), text, sessionId)
+
+        } else if (newrequest === "0") {
+
+            // get phone session details 
+            await customer.getSessionDeatails(phoneNumber.slice(3), sessionId).then((data) => {
+
+                data.forEach(dt => {
+
+                    dbText = dt["input"]
+
+                })
+            })
+
+            text = dbText + "*" + text
+
+            // update database with new appended text
+
+            await customer.updateInputSession(phoneNumber.slice(3), sessionId, text)
+
+        }
+
 
         let closeOropenSession = 0
 
         // removing the first for characters of a //text e.g 7227 
-        text = text.slice(4)
+        text = text.slice(5)
 
+        console.log(text)
+        
         text = ussdR.ussdRouter(text)
 
         let contact = phoneNumber.slice(3)
@@ -58,21 +96,20 @@ router.get('/', async (req, res) => {
             })
 
         } else if ((text !== "") && (text.indexOf('*') === -1)) {
-            
+
             //auth logged in user
 
             await customer.login(contact, text).then(data => {
-
+                
                 if (data.length > 0) {
 
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
 
                     response = `Menu:
-                               1. My Products
-                               2. Momo Mtn
-                               00. Exit
-                               `;
+                                1. My Products
+                                2. Momo Mtn
+                                00. Exit`;
                     closeOropenSession = 1
 
                 } else {
@@ -89,38 +126,34 @@ router.get('/', async (req, res) => {
 
         } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
 
-            response = `       Menu:
-                               1. My Products
-                               2. Momo Mtn
-                               00. Exit
-                               `;
-
+            response = `Menu:
+                        1. My Products
+                        2. Momo Mtn
+                        00. Exit`;
+            
             closeOropenSession = 1
-
+        
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
-
-            response = `
-                        1. Transfer money from Savings
+            
+            response = `1. Transfer money from Savings
                         2. Transfer money to Savings
                         00. Back
-                        0. Exit
-                        `;
+                        0. Exit`;
             closeOropenSession = 1
         }
-
+        
         if (text.indexOf('2*1') !== -1) { // get money from savings account to mobile money
-
-
+            
             var activeAccounts;
-
+            
             await account.getClientAccount(contact).then(async (data) => {
-
+                
                 let clientNumber;
-
+                
                 data.forEach(el => {
                     clientNumber = el["account"]
                 })
-
+                
                 // call function to get account numbers
 
                 await account.clientsProducts(clientNumber).then(resAccounts => {
@@ -282,7 +315,7 @@ router.get('/', async (req, res) => {
                     let count = 0
                     activeAccounts.forEach(el => {
                         count = count + 1
-                        response += el["productName"] + ` ( Acc: ` + el["accountNo"].substring(5, 9) + `)  <br>`
+                        response += el["productName"] + ` ( Acc: ` + el["accountNo"].substring(5, 9) + `) <br>`
 
                     });
 
@@ -350,13 +383,13 @@ router.get('/', async (req, res) => {
                         this.accountBalance = 0
                     }
 
-                    response = `    Account Details :)<br>
-                                    Total deposits: E  ${this.totaldeposists} <br>
-                                    Total withdrawals: E ${this.totalWithdrawals} <br>
-                                    Total Interest: E ${this.totalInterestPosted} <br><br>
-                                    Balance: E ${this.accountBalance}<br><br>
-                                    00. Back<br>
-                                    0. Exit`;
+                    response = `Account Details :)<br>
+                                Total deposits: E  ${this.totaldeposists} <br>
+                                Total withdrawals: E ${this.totalWithdrawals} <br>
+                                Total Interest: E ${this.totalInterestPosted} <br><br>
+                                Balance: E ${this.accountBalance}<br><br>
+                                00. Back<br>
+                                0. Exit`;
 
                     closeOropenSession = 1
                 })
