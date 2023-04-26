@@ -10,11 +10,14 @@ router.get('/', async (req, res) => {
 
     var response = ``;
 
+
     try {
 
         let phoneNumber = req.query.Msisdn
         let text = req.query.input
         let sessionId = req.query.sessionID
+
+        let closeOropenSession = 0
 
         // removing the first for characters of a //text e.g 7227 
         text = text.slice(4)
@@ -42,17 +45,20 @@ router.get('/', async (req, res) => {
                     if (attempts < 3) {
 
                         response = `SCBS :)<br> Welcome ${customer_name} <br>Enter your pin:`;
+                        closeOropenSession = 1
                     } else {
                         response = `SCBS :) Please note user account has been locked.`;
+                        closeOropenSession = 0
                     }
 
                 } else {
                     response = `Welcome to SCBS please contact 24171975 for more info.`;
+                    closeOropenSession = 0
                 }
             })
 
         } else if ((text !== "") && (text.indexOf('*') === -1)) {
-
+            
             //auth logged in user
 
             await customer.login(contact, text).then(data => {
@@ -67,6 +73,8 @@ router.get('/', async (req, res) => {
                                2. Momo Mtn
                                00. Exit
                                `;
+                    closeOropenSession = 1
+
                 } else {
 
                     //update status of being locked
@@ -74,6 +82,7 @@ router.get('/', async (req, res) => {
 
                     // get loggin attempts
                     response = `SCBS:) Failed to login, After 3 attempts your account will be locked.`;
+                    closeOropenSession = 0
                 }
             })
 
@@ -86,6 +95,8 @@ router.get('/', async (req, res) => {
                                00. Exit
                                `;
 
+            closeOropenSession = 1
+
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
 
             response = `
@@ -94,6 +105,7 @@ router.get('/', async (req, res) => {
                         00. Back
                         0. Exit
                         `;
+            closeOropenSession = 1
         }
 
         if (text.indexOf('2*1') !== -1) { // get money from savings account to mobile money
@@ -156,6 +168,8 @@ router.get('/', async (req, res) => {
                     response += `<br>To Transfer -> <b>Acc No./Amount</b><br>`;
                     response += `00. Back`;
                     response += `<br>0. Exit </span>`;
+
+                    closeOropenSession = 1
 
                 }).catch(err => {
                     console.log(err)
@@ -225,6 +239,7 @@ router.get('/', async (req, res) => {
                     response += `00. Back`;
                     response += `<br>0. Exit </span>`;
 
+                    closeOropenSession = 1
 
                 }).catch(err => {
                     console.log(err)
@@ -274,6 +289,8 @@ router.get('/', async (req, res) => {
                     response += `<br>Enter <b>Acc No.</b> to view details`;
                     response += `<br>00. Back`;
                     response += `<br>0. Exit</span>`;
+
+                    closeOropenSession = 1
 
                 }).catch(err => {
                     console.log(err)
@@ -340,6 +357,8 @@ router.get('/', async (req, res) => {
                                     Balance: E ${this.accountBalance}<br><br>
                                     00. Back<br>
                                     0. Exit`;
+
+                    closeOropenSession = 1
                 })
             } catch (err) {
                 console.log(err)
@@ -347,14 +366,26 @@ router.get('/', async (req, res) => {
         }
 
 
-        res.writeHead(200, {
-            'Freeflow': 'FC',
-            'Content-Type': 'text/plain'
-        });
+        //need a way to dertemine if we are closing the or the request is still open
+
+        if (closeOropenSession === 1) {
+
+            res.writeHead(200, {
+                'Freeflow': 'FC',
+                'Content-Type': 'text/plain'
+            });
+
+        } else {
+
+            res.writeHead(200, {
+                'Freeflow': 'FB',
+                'Content-Type': 'text/plain'
+            });
+
+        }
 
         res.write(response)
         res.end();
-
 
     } catch (err) {
         console.log(err)
