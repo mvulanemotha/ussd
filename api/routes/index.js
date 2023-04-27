@@ -130,7 +130,7 @@ router.get('/', async (req, res) => {
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
             
             response = "Transfer:<br>"
-            response += "1. From Savings<br>2. To Savings<br>00. Back<br><br>0. Exit";
+            response += "1. From Savings<br>2. To Savings<br><br>00. Back<br>0. Exit";
             closeOropenSession = 1
         }
         
