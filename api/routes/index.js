@@ -130,7 +130,7 @@ router.get('/', async (req, res) => {
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
             
             response = "Transfer:<br>"
-            response += "1. From Savings<br>2. To Savings<br> 00. Back<br><br> 0. Exit";
+            response += "1. From Savings<br>2. To Savings<br>00. Back<br><br>0. Exit";
             closeOropenSession = 1
         }
         
@@ -186,7 +186,7 @@ router.get('/', async (req, res) => {
                         }
                         
                         count = count + 1
-                        response += count +". " + el["accountNo"] + " E" + accountBalance + "<br>"
+                        response += el["accountNo"] + " E" + accountBalance + "<br>"
                     
                     });
                     
@@ -255,7 +255,7 @@ router.get('/', async (req, res) => {
                         }
                         
                         count = count + 1
-                        response += count +". " + el["accountNo"] + "<br>E" + accountBalance + "<br>";
+                        response += el["accountNo"] + "<br>E" + accountBalance + "<br>";
                     
                     });
                     
@@ -306,11 +306,11 @@ router.get('/', async (req, res) => {
                     let count = 0
                     activeAccounts.forEach(el => {
                         count = count + 1
-                        response += count+". "+ el["accountNo"] + "<br>"
+                        response +=  el["accountNo"] + "<br>"
                     
                     });
                     
-                    response += "<br>View Account:";
+                    response += "<br>Type Acc No:";
                     response += "<br>00. Back";
                     response += "<br>0. Exit";
                     
