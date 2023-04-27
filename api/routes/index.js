@@ -7,54 +7,54 @@ const ussdR = require('ussd-router')
 
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
-
-    var response = "Dev in action";
-
+    
+    var response = "Comming soon :)";
+    
     try {
-
-
+        
+        
         let phoneNumber = req.query.Msisdn
         let text = req.query.input
         let sessionId = req.query.sessionID
         let newrequest = req.query.newrequest
-
+        
         let dbText = ""
-
+        
         // get functions to help track our progress
-
+        
         //getSessionDeatails, updateInputSession, addNewsession
-
-
+        
+        
         // if newrequest === 0 then its a new request
         // add new session in database
-
+        
         if (newrequest === "1") {
-
+            
             await customer.addNewsession(phoneNumber.slice(3), text, sessionId)
-
+        
         } else if (newrequest === "0") {
-
+            
             // get phone session details 
             await customer.getSessionDeatails(phoneNumber.slice(3), sessionId).then((data) => {
-
+                
                 data.forEach(dt => {
-
+                    
                     dbText = dt["input"]
-
+                
                 })
             })
-
+            
             text = dbText + "*" + text
-
+            
             // update database with new appended text
-
+            
             await customer.updateInputSession(phoneNumber.slice(3), sessionId, text)
-
+        
         }
-
-
+        
+        
         let closeOropenSession = 0
-
+        
         // removing the first for characters of a //text e.g 7227 
         text = text.slice(5)
         
@@ -123,14 +123,14 @@ router.get('/', async (req, res) => {
         
         } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
             
-            response = "Menu:<br>1. My Products<br>2. Mobile Money<br><br>00. Exit";
+            response = "Menu:<br>1. My Accounts<br>2. Mobile Money<br><br>00. Exit";
             
             closeOropenSession = 1
         
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
             
             response = "Transfer:<br>"
-            response += "1. From Savings<br>2. To Savings<br>00. Back<br> 0. Exit";
+            response += "1. From Savings<br>2. To Savings<br> 00. Back<br><br> 0. Exit";
             closeOropenSession = 1
         }
         
@@ -186,13 +186,13 @@ router.get('/', async (req, res) => {
                         }
                         
                         count = count + 1
-                        response += count + " " + el["accountNo"] + " E" + accountBalance + "<br>"
+                        response += count +". " + el["accountNo"] + " E" + accountBalance + "<br>"
                     
                     });
                     
-                    response += "<br>To Transfer: <br> Acc No/Amount <br>";
-                    response += "00. Back";
-                    response += "<br>0. Exit </span>";
+                    response += "<br>Acc No/Amount<br>";
+                    response += "00. Back<br>";
+                    response += "0. Exit";
                     
                     closeOropenSession = 1
                 
@@ -255,13 +255,13 @@ router.get('/', async (req, res) => {
                         }
                         
                         count = count + 1
-                        response += count + " " + el["accountNo"] + "E" + accountBalance + "<br>";
+                        response += count +". " + el["accountNo"] + "<br>E" + accountBalance + "<br>";
                     
                     });
                     
-                    response += "<br>To Transfer: <br> Acc No/Amount<br>";
-                    response += "00. Back";
-                    response += "<br>0. Exit";
+                    response += "<br>Acc No/Amount<br>";
+                    response += "00. Back<br>";
+                    response += "0. Exit";
                     
                     closeOropenSession = 1
                 
@@ -301,12 +301,12 @@ router.get('/', async (req, res) => {
                     
                     // display accounts to the customer
                     
-                    response = "My products :) <br>";
+                    response = "My Accounts:<br>";
                     
                     let count = 0
                     activeAccounts.forEach(el => {
                         count = count + 1
-                        response += count +" "+ el["accountNo"] + "<br>"
+                        response += count+". "+ el["accountNo"] + "<br>"
                     
                     });
                     
@@ -374,8 +374,8 @@ router.get('/', async (req, res) => {
                         this.accountBalance = 0
                     }
                     
-                    response = "Account :)<br>Deposits: E" + this.totaldeposists //+ "<br> Withdrawals: E" + this.totalWithdrawals + "<br>"
-                    response += "<br>Interest: E " + this.totalInterestPosted + "<br>"
+                    response = "Account:<br>Deposits: E" + this.totaldeposists + "<br>Withdrawals: E" + this.totalWithdrawals + "<br>"
+                    response += "Interest: E " + this.totalInterestPosted + "<br>"
                     response += "Balance: E " + this.accountBalance + "<br><br>"
                     response += "00. Back<br>"
                     response += "0. Exit";
