@@ -374,7 +374,7 @@ router.get('/', async (req, res) => {
                         this.accountBalance = 0
                     }
                     
-                    response = "Account:<br>Deposits: E" + this.totaldeposists + "<br>Withdrawals: E" + this.totalWithdrawals + "<br>"
+                    response = "Account:<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
                     response += "Interest: E " + this.totalInterestPosted + "<br>"
                     response += "Balance: E " + this.accountBalance + "<br><br>"
                     response += "00. Back<br>"
