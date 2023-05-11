@@ -549,8 +549,8 @@ setInterval(async () => {
                     collections.updatepaymentRequest(2, token, xxid)
                 }
 
-                //succesfully request
-                if (status === "SUCCESSFUL") {
+                //succesfully request 0d47736e-698d-46cb-a787-bd1d2a22457d
+                if (status === 'SUCCESSFUL') {
                     collections.updatepaymentRequest(1, token, xxid)
 
                     // sms from status after a succesfully transaction
