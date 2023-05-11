@@ -64,4 +64,4 @@ let headers = () => {
 
 }
 
-module.exports = { headers, tellerHeaders }
+module.exports = { headers }
