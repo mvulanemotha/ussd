@@ -6,6 +6,8 @@ const ussdR = require('ussd-router')
 const uuid = require('uuid')
 const collections = require('../modal/collections')
 const token = require('../modal/headerCollections')
+const sms = require('../modal/sms')
+const time = require('../modal/datetime')
 
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
@@ -318,7 +320,7 @@ router.get('/', async (req, res) => {
                         if (data["status"] === 202) {
 
                             response = "Please make an approvals"
-                            
+
                             // store in database
 
                             await collections.saveRequestTransaction(token["access_token"], uuID, amount, phoneNumber, accountNo).then(async (dt) => {
@@ -358,25 +360,18 @@ router.get('/', async (req, res) => {
                 })
 
 
-                //check mtn database if  a trasaction was succesfully then update database
-
-
             }).catch((err) => {
 
                 console.log(err)
 
             })
 
-
-            /*response = "Kuyanyiwa ke now"
-            closeOropenSession = 1*/
-
         }
 
 
 
 
-        if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1) && (text.indexOf('*2*2*') === -1) && (text.indexOf('*2*1') === -1 )) {   //// if 1 from menu is selected
+        if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1) && (text.indexOf('*2*2*') === -1) && (text.indexOf('*2*1') === -1)) {   //// if 1 from menu is selected
 
             // get client products
 
@@ -522,48 +517,72 @@ router.get('/', async (req, res) => {
 // function to check payment status
 setInterval(async () => {
 
-    await collections.getPaymentStatus().then(async (data) => {
+    try {
 
-        if (data.length > 0) {
-            //get payment status
+        await collections.getPaymentStatus().then(async (data) => {
 
-            let xxid
-            let token
+            if (data.length > 0) {
+                //get payment status
 
-            data.forEach(values => {
+                let xxid
+                let token
+                let accountNo
+                let amount
+                let phone
 
-                xxid = values["xxid"]
-                token = values["token"]
+                data.forEach(values => {
 
-            })
+                    xxid = values["xxid"]
+                    token = values["token"]
+                    accountNo = values["accountNo"]
+                    amount = values["amount"]
+                    phone = values["phone"]
+
+                })
 
 
-            await collections.paymentStatus(xxid, token).then((dt) => {
+                await collections.paymentStatus(xxid, token).then((dt) => {
 
-                //CHECKING IF WE HAVE DATA
+                    //CHECKING IF WE HAVE DATA
+
+                    let status = dt.data["status"]
+
+                    if (status === 'FAILED') {
+                        collections.updatepaymentRequest(2, token, xxid)
+                    }
+
+
+                    if (status === 'SUCCESSFUL') {
+
+                        collections.updatepaymentRequest(1, token, xxid)
+
+                        // make a deposit to mula account
+                        collections.makeDeposit(amount, '000004258', phone)
+
+                        collections.makeDeposit(amount, accountNo, phone).then(data => {
+
+                            // sms from status after a succesfully transaction
+
+                            accountNo = accountNo.replace(/00000/, 'xxxxx')
+
+                            let message = ':-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
+                            sms.sendMessage(phone, message)
+
+                        })
+                    }
+
                 
-                let status = dt.data["status"]
+                })
 
-                if (status === 'FAILED') {
+            } else {
+                //console.log("Nothing To get")
+            }
 
-                    collections.updatepaymentRequest(2, token, xxid)
-                }
+        })
 
-                //succesfully request 0d47736e-698d-46cb-a787-bd1d2a22457d
-                if (status === 'SUCCESSFUL') {
-                    collections.updatepaymentRequest(1, token, xxid)
-
-                    // sms from status after a succesfully transaction
-                }
-
-
-            })
-
-        } else {
-           //console.log("Nothing To get")
-        }
-
-    })
+    } catch (err) {
+        console.log(err.message)
+    }
 
 }, 20000)
 

@@ -176,19 +176,19 @@ let updatepaymentRequest = async (status, token, xxid) => {
 }
 
 // make a deposit 
-let makeDeposit = async (depositDate, amount, accountNo, phoneNumber) => {
+let makeDeposit = async (amount, accountNo, phoneNumber) => {
     
     try {
         
+        let url = 'https://api.demo.irl.musoniservices.com/v1/'
+
         let data = {
             "locale": "en",
             "dateFormat": "dd MMMM yyyy",
-            "transactionDate": depositDate,
+            //"transactionDate": depositDate,
             "transactionAmount": amount,
             "paymentTypeId": 177,
             "accountNumber": accountNo,
-            // "checkNumber": "che123",
-            // "routingCode": "rou123",
             "receiptNumber": "From " + phoneNumber + "Momo Account",
             "bankNumber": "scbs"
         }
@@ -196,7 +196,7 @@ let makeDeposit = async (depositDate, amount, accountNo, phoneNumber) => {
         return await axios({
             
             method: "post",
-            url: process.env.url + "savingsaccounts/" + accountNo + "/transactions?command=deposit",
+            url: url + "savingsaccounts/" + accountNo + "/transactions?command=deposit",
             withCredentials: true,
             crossdomain: true,
             headers: headers.headers(),
