@@ -17,7 +17,7 @@ let clientsProducts = async (accountNo) => {
         url: process.env.url + "clients/" + accountNo + "/accounts",
         withCredentials: true,
         crossdomain: true,
-        headers: headers.headers()
+        headers: headers.headersMusoni()
     })
 }
 
@@ -62,7 +62,7 @@ let accountDetails = async (accountNo) => {
             url: process.env.url + "savingsaccounts/" + accountNo,
             withCredentials: true,
             crossdomain: true,
-            headers: headers.headers()
+            headers: headers.headersMusoni()
         })
 
     } catch (error) {

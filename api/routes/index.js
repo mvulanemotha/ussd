@@ -108,7 +108,7 @@ router.get('/', async (req, res) => {
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
 
-                    response = "Menu:<br>1. My Accounts<br>2. Mtn Mobile Money<br><br>00. Exit";
+                    response = "Menu:<br>1. My Accounts<br>2. Mtn Momo Transfers<br><br>00. Exit";
                     closeOropenSession = 1
 
                 } else {
@@ -125,7 +125,7 @@ router.get('/', async (req, res) => {
 
         } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
 
-            response = "Menu:<br>1. My Accounts<br>2. Mtn Mobile Money<br><br>00. Exit";
+            response = "Menu:<br>1. My Accounts<br>2. Mtn Momo Transfers<br><br>00. Exit";
 
             closeOropenSession = 1
 
@@ -312,20 +312,22 @@ router.get('/', async (req, res) => {
                     //console.log(data)
 
                     if (data["status"] !== undefined) {
-
+                        
+                        console.log(data)
+                        
                         if (data["status"] === 202) {
 
-                            response = "Please make an approvals"
+                            //response = "Please make an approvals"
 
                             // store in database
 
                             await collections.saveRequestTransaction(token["access_token"], uuID, amount, phoneNumber, accountNo).then(async (dt) => {
 
                                 if (dt["affectedRows"] === 1) {
-
-                                    response = "Please make an approval."
+                                    
+                                    response = "SCBS :-) Thank you valued customer please remember to approve your transaction on your momo account."
                                     closeOropenSession = 0
-
+                                
                                 } else {
 
                                     response = "Failed to make transfer."
