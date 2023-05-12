@@ -4,12 +4,12 @@ dotenv.config();
 
 
 
-let headers = () => {
-
+let headersMusoni = () => {
+  
   let apiKey = 'uUUnYBrEJ48mp2JoM8Jni7yIf8JDRP1N7mZvUTmO' 
   let username = 'Status Capital API' 
   let password = 'Status12345'
-
+  
   
   let musonCredentials = username + ':' + password
 
@@ -29,4 +29,4 @@ let headers = () => {
 
 }
 
-module.exports = { headers }
+module.exports = { headersMusoni }

@@ -1,5 +1,6 @@
 const db = require('../../db/database')
 const headers = require('./headerCollections')
+const headersMusoni = require('./header')
 const dotenv = require('dotenv');
 const { default: axios } = require('axios');
 dotenv.config();
@@ -176,20 +177,20 @@ let updatepaymentRequest = async (status, token, xxid) => {
 }
 
 // make a deposit 
-let makeDeposit = async (amount, accountNo, phoneNumber) => {
+let makeDeposit = async (amount, accountNo, phoneNumber , depositDate) => {
     
     try {
         
-        let url = 'https://api.demo.irl.musoniservices.com/v1/'
-
+        let url =  'https://api.live.irl.musoniservices.com/v1/' //'https://api.demo.irl.musoniservices.com/v1/'
+        
         let data = {
             "locale": "en",
             "dateFormat": "dd MMMM yyyy",
-            //"transactionDate": depositDate,
+            "transactionDate": depositDate,
             "transactionAmount": amount,
             "paymentTypeId": 177,
             "accountNumber": accountNo,
-            "receiptNumber": "From " + phoneNumber + "Momo Account",
+            "receiptNumber": "From " + phoneNumber + " Momo Account",
             "bankNumber": "scbs"
         }
         
@@ -199,7 +200,7 @@ let makeDeposit = async (amount, accountNo, phoneNumber) => {
             url: url + "savingsaccounts/" + accountNo + "/transactions?command=deposit",
             withCredentials: true,
             crossdomain: true,
-            headers: headers.headers(),
+            headers: headersMusoni.headersMusoni(),
             data: data
         
         })

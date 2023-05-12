@@ -12,24 +12,20 @@ const time = require('../modal/datetime')
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = "Sorry a technical error occured we are working on it :)";
+    var response = "Wrong input fileds were entered :)";
 
     try {
 
-
+        
         let phoneNumber = req.query.Msisdn
         let text = req.query.input
         let sessionId = req.query.sessionID
         let newrequest = req.query.newrequest
-
+        
         let dbText = ""
 
         // get functions to help track our progress
-
-        //getSessionDeatails, updateInputSession, addNewsession
-
-
-        // if newrequest === 0 then its a new request
+        
         // add new session in database
 
         if (newrequest === "1") {
@@ -519,6 +515,9 @@ setInterval(async () => {
 
     try {
 
+
+        let newDate = time.getTime().slice(0, 10)
+        
         await collections.getPaymentStatus().then(async (data) => {
 
             if (data.length > 0) {
@@ -554,12 +553,13 @@ setInterval(async () => {
 
                     if (status === 'SUCCESSFUL') {
 
+                        // 1 means transaction was succesfully
                         collections.updatepaymentRequest(1, token, xxid)
 
                         // make a deposit to mula account
-                        collections.makeDeposit(amount, '000004258', phone)
+                        collections.makeDeposit(amount, '000004258', phone, time.myDate(newDate))
 
-                        collections.makeDeposit(amount, accountNo, phone).then(data => {
+                        collections.makeDeposit(amount, accountNo, phone, time.myDate(newDate)).then(data => {
 
                             // sms from status after a succesfully transaction
 
@@ -571,7 +571,7 @@ setInterval(async () => {
                         })
                     }
 
-                
+
                 })
 
             } else {
