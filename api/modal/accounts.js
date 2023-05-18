@@ -72,4 +72,6 @@ let accountDetails = async (accountNo) => {
 }
 
 
-module.exports = { clientsProducts, getClientAccount , accountDetails }
+
+
+module.exports = { clientsProducts, getClientAccount, accountDetails }

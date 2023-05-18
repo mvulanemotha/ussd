@@ -15,7 +15,7 @@ let requestToPay = async (uuid, payToken, amount, msisdn) => {
     try {
 
         let data = {
-
+            
             "amount": amount,
             "currency": "SZL",
             "externalId": msisdn,
@@ -94,7 +94,7 @@ let saveRequestTransaction = async (token, xxid, amount, phone, accountNo) => {
         return await new Promise((resolve, reject) => {
 
             let query = "insert into collectionrequest(token , xxid , amount, phone , accountNo) select ?,?,?,?,? where not exists (select xxid from collectionrequest where xxid = ?) limit 1 "
-
+            
             db.query(query, [token, xxid, amount, phone, accountNo, xxid], (err, result) => {
 
                 if (err) {

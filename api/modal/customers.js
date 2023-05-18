@@ -182,7 +182,7 @@ let addNewsession = async (phone, input, sessionId) => {
         return await new Promise((resolve, reject) => {
 
             let query = "insert into sessions(phone,sessionId,input) select ?,?,?"
-            
+
             db.query(query, [phone, sessionId, input], (err, result) => {
 
                 if (err) {
@@ -226,4 +226,114 @@ let updateInputSession = async (phone, session, input) => {
 
 }
 
-module.exports = { addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }
+// update customer password
+let changePassword = async (phone, password) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "update customers set password = ? where username = ? limit 1"
+
+            db.query(query, [password, phone], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+}
+
+
+//save clients to database
+let saveCustomers = async (account, username, loginattempts, password) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "insert into customers (account , username , loginattempts , password) select ?,?,?,? "
+
+            db.query(query, [account, username, loginattempts, password], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+// save clientnumbers
+let saveClientNumbers = async (account, name, contact, status) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "insert into clientsnumbers (account , name , contact , status) select ?,?,?,?"
+
+            db.query(query, [account, name, contact, status], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+
+//check if user is a client or not
+let checkNewUser = async (contact) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "select * from clientsnumbers where contact = ?  limit 1"
+
+            db.query(query, [contact], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+        
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+
+module.exports = { checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }

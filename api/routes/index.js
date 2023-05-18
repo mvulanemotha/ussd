@@ -6,26 +6,29 @@ const ussdR = require('ussd-router')
 const uuid = require('uuid')
 const collections = require('../modal/collections')
 const token = require('../modal/headerCollections')
+const disbursment = require('../modal/disbursment')
+const disbursementHeader = require('../modal/disburstmentHeader')
+
 const sms = require('../modal/sms')
 const time = require('../modal/datetime')
 
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = "Wrong input fileds were entered :)";
+    var response = "SCBS :-) Wrong input fields were entered :)";
 
     try {
 
-        
+
         let phoneNumber = req.query.Msisdn
         let text = req.query.input
         let sessionId = req.query.sessionID
         let newrequest = req.query.newrequest
-        
+
         let dbText = ""
 
         // get functions to help track our progress
-        
+
         // add new session in database
 
         if (newrequest === "1") {
@@ -58,18 +61,14 @@ router.get('/', async (req, res) => {
         // removing the first for characters of a //text e.g 7227 
         text = text.slice(5)
 
-        console.log(text)
-
         text = ussdR.ussdRouter(text)
-
-        console.log(text)
 
         let contact = phoneNumber.slice(3)
 
         if (text == "") {
 
             //check if user is registered
-            await customer.isCustomer(contact).then((data) => {
+            await customer.isCustomer(contact).then(async (data) => {
 
                 let customer_name;
                 let attempts;
@@ -84,16 +83,57 @@ router.get('/', async (req, res) => {
 
                     if (attempts < 3) {
 
-                        response = "SCBS:)<br>Welcome " + customer_name + "<br>Enter your pin:";
+                        response = "SCBS :-)<br>Welcome " + customer_name + "<br>Enter your pin:";
                         closeOropenSession = 1
-                    } else {
-                        response = `SCBS:)Please note user account has been locked.`;
-                        closeOropenSession = 0
-                    }
 
+                    } else {
+
+                        response = `SCBS :-)Please note user account has been locked.`;
+                        closeOropenSession = 0
+
+                    }
                 } else {
-                    response = "Welcome to SCBS please contact 24171975 for more info.";
-                    closeOropenSession = 0
+
+
+                    //call function to check if customers is in the database if yes send an sms with a password and insert into customers
+
+
+                    //check if user is a new customer
+
+                    await customer.checkNewUser(contact).then(async (dt) => {
+
+                        let account, username;
+
+                        dt.forEach((e) => {
+                            account = e["account"]
+                            username = e["contact"]
+                        })
+
+
+                        if (dt.length > 0) {
+
+                            //create a password and insert into customers
+
+                            let password = Math.floor(100000 + Math.random() * 900000)
+
+                            await customer.saveCustomers(account, username, 0, password).then(saved => {
+
+
+
+                                response = "SCBS :-) <br><br> Please use the password sent to you to login thanks.";
+                                closeOropenSession = 0
+
+                            })
+
+                        } else {
+
+                            response = "Welcome to SCBS please contact 24171975 for more info.";
+                            closeOropenSession = 0
+
+                        }
+
+                    })
+
                 }
             })
 
@@ -108,7 +148,7 @@ router.get('/', async (req, res) => {
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
 
-                    response = "Menu:<br>1. My Accounts<br>2. Mtn Momo Transfers<br><br>00. Exit";
+                    response = " Menu :-)<br>1. My Accounts<br>2. Mtn Momo Transfers <br>3. Change Password <br><br>00. Exit";
                     closeOropenSession = 1
 
                 } else {
@@ -117,7 +157,7 @@ router.get('/', async (req, res) => {
                     customer.updateFailedLogins(contact)
 
                     // get loggin attempts
-                    response = `SCBS:) Failed to login, you will be locked out.`;
+                    response = `SCBS :-) Failed to login, you will be locked out.`;
                     closeOropenSession = 0
                 }
             })
@@ -125,18 +165,68 @@ router.get('/', async (req, res) => {
 
         } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
 
-            response = "Menu:<br>1. My Accounts<br>2. Mtn Momo Transfers<br><br>00. Exit";
+            response = " Menu :-)<br>1. My Accounts<br>2. Mtn Momo Transfers <br>3. Change Password <br><br>00. Exit";
 
             closeOropenSession = 1
 
         } else if ((text.indexOf('*2') !== -1) && (text.indexOf('*2*1') === -1) && (text.indexOf('*2*2') === -1)) { // viewing mtn momo
 
-            response = "Transfer:<br>"
+            response = "Transfer :-)<br>"
             response += "1. From Savings<br>2. To Savings<br><br>00. Back<br>0. Exit";
             closeOropenSession = 1
         }
 
-        if ((text.indexOf('2*1') !== -1) && (text.indexOf('*2*2*') === -1)) { // get money from savings account to mobile money
+
+        //change user password
+        if (((text.indexOf('*3')) !== -1) && (text.indexOf('*3*') === -1)) {
+
+            response = "Enter Old Password."
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
+
+        // enter new password and update password in the datanase
+        if ((text.indexOf('*3*') !== -1)) {
+
+
+            response = "Enter New password"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+        }
+
+
+        // change passwords
+
+        if ((text.indexOf('*3*') !== -1) && (countString(text, '*') === 3) && (text.length === 22)) {
+
+            //first check the number of characters from the strings
+            let newPass = text.slice(16)
+            let phone = phoneNumber.slice(3)
+
+            // update database with new password
+
+            await customer.changePassword(phone, newPass).then((data) => {
+
+                if (data["affectedRows"] === 1) {
+
+                    response = "SCBS :-)<br> Password Changed Successfully."
+
+                } else {
+
+                    response = "SCBS :-)<br> Failed To Change Password."
+                }
+            })
+
+            closeOropenSession = 0;
+
+        }
+
+
+        if ((text.indexOf('2*1') !== -1) && (text.indexOf('*2*2*') === -1) && (text.indexOf('*2*1*') === -1)) { // get money from savings account to mobile money
 
             var activeAccounts;
 
@@ -173,7 +263,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = "Select Acc No:<br>";
+                    response = "Select Acc No :-)<br>";
 
                     let count = 0
                     let accountBalance = 0
@@ -188,11 +278,11 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += el["accountNo"] + "<br> E" + accountBalance + "<br>"
+                        response += el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
 
                     });
 
-                    response += "<br>Enter Amount.<br>";
+                    //response += "<br>Enter Amount.<br>";
                     response += "00. Back<br>";
                     response += "0. Exit";
 
@@ -204,6 +294,50 @@ router.get('/', async (req, res) => {
             })
 
         }
+
+        // Enter amount to send to disbursememtn
+        console.log(text.length)
+        if ((text.indexOf('*2*1*') !== -1) && ((text.length === 20)) && (text.indexOf('*2*1*00000') !== 0)) {
+
+
+            response = "Enter Amount To Transfer :-)<br><br>"
+
+            response += "00. Back<br>";
+            response += "0. Exit";
+
+            closeOropenSession = 1
+        
+        }
+        
+        //after amount was entered
+        if ((text.indexOf('*2*1*') !== -1) && (text.length > 20)) {
+            
+            response = "SCBS :-) Coming soon"
+            closeOropenSession = 0
+            /*
+            //generate an uxxd 
+            await disbursementHeader.token().then(async neWtoken => {
+                
+                let token = neWtoken.data["access_token"]
+                let amount = text.slice(21)
+                
+                //create uxxID
+                uuID = uuid.v4();
+                
+                await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
+                    
+                    console.log(payRes)
+                
+                
+                })
+            })
+            */
+
+            console.log(text)
+            //have functions that will withdraw from the musoni account
+
+        }
+
 
         if ((text.indexOf('*2*2') !== -1) && (text.indexOf('*2*2*') === -1)) {  // from momo account to savings account
 
@@ -244,7 +378,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = "Select Acc No To: <br>";
+                    response = "Select Acc No :-) <br>";
 
                     let accountBalance = 0
                     let count = 0
@@ -279,7 +413,7 @@ router.get('/', async (req, res) => {
         //transfer money in mobile money
         if ((text.indexOf('*2*2*') !== -1) && (text.indexOf('*2*2*00000') !== -1) && ((text.length === 20))) {
 
-            response = "Enter Amount.<br>"
+            response = "Enter Amount :-)<br>"
 
             response += "<br>00. Back";
             response += "<br>0. Exit";
@@ -288,7 +422,6 @@ router.get('/', async (req, res) => {
 
         }
 
-        console.log(text.length)
 
         //transfer amount entered to make the transfer
         if ((text.indexOf('*2*2*') !== -1) && (text.indexOf('*2*2*00000') !== -1) && (text.length >= 22)) {
@@ -312,9 +445,9 @@ router.get('/', async (req, res) => {
                     //console.log(data)
 
                     if (data["status"] !== undefined) {
-                        
+
                         console.log(data)
-                        
+
                         if (data["status"] === 202) {
 
                             //response = "Please make an approvals"
@@ -324,13 +457,13 @@ router.get('/', async (req, res) => {
                             await collections.saveRequestTransaction(token["access_token"], uuID, amount, phoneNumber, accountNo).then(async (dt) => {
 
                                 if (dt["affectedRows"] === 1) {
-                                    
+
                                     response = "SCBS :-) Thank you valued customer please remember to approve your transaction on your momo account."
                                     closeOropenSession = 0
-                                
+
                                 } else {
 
-                                    response = "Failed to make transfer."
+                                    response = "SCBS :-) Failed to make transfer."
                                     closeOropenSession = 0
 
                                 }
@@ -344,7 +477,7 @@ router.get('/', async (req, res) => {
 
                         } else {
 
-                            response = "Failed to make transfer. Please check if you have enough money."
+                            response = "SCBS :-) Failed to make transfer. Please check if you have enough money."
                             closeOropenSession = 0
                         }
 
@@ -369,7 +502,7 @@ router.get('/', async (req, res) => {
 
 
 
-        if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1) && (text.indexOf('*2*2*') === -1) && (text.indexOf('*2*1') === -1)) {   //// if 1 from menu is selected
+        if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1) && (text.indexOf('*2*2*') === -1) && (text.indexOf('*2*1') === -1) && ((text.indexOf('*3')) === -1)) {   //// if 1 from menu is selected
 
             // get client products
 
@@ -397,7 +530,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = "My Acc No's :)<br>";
+                    response = "My Accounts :-)<br>";
 
                     let count = 0
                     activeAccounts.forEach(el => {
@@ -420,7 +553,7 @@ router.get('/', async (req, res) => {
 
         }
 
-        if (text.indexOf('*1*') !== -1) {  // view account deatails
+        if ((text.indexOf('*1*') !== -1) && (text.indexOf('*2*1*') === -1)) {  // view account deatails
 
             try {
 
@@ -437,8 +570,6 @@ router.get('/', async (req, res) => {
                     totalFeeCharge = +data.data.summary.totalFeeCharge || 0
                     totalWithdrawals = +data.data.summary.totalWithdrawals || 0
                     totalInterestPosted = +data.data.summary.totalInterestPosted || 0
-
-
 
                     if (data.data["savingsProductName"].indexOf("Fixed Period Shares") >= 0) {
                         this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge)).toFixed(2)
@@ -470,7 +601,7 @@ router.get('/', async (req, res) => {
                         this.accountBalance = 0
                     }
 
-                    response = "Acc Info:<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
+                    response = "My Account Info :-) <br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
                     response += "Interest: E " + this.totalInterestPosted + "<br>"
                     response += "Balance: E " + this.accountBalance + "<br><br>"
                     response += "00. Back<br>"
@@ -511,6 +642,32 @@ router.get('/', async (req, res) => {
 
 })
 
+//save ussd customers
+router.post('/', async (req, res) => {
+
+
+    // save a new client 
+
+
+    //
+
+})
+
+
+let countString = (str, letter) => {
+    let count = 0;
+
+    // looping through the items
+    for (let i = 0; i < str.length; i++) {
+
+        // check if the character is at that position
+        if (str.charAt(i) == letter) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
 
 // function to check payment status
 setInterval(async () => {
@@ -519,7 +676,7 @@ setInterval(async () => {
 
 
         let newDate = time.getTime().slice(0, 10)
-        
+
         await collections.getPaymentStatus().then(async (data) => {
 
             if (data.length > 0) {
