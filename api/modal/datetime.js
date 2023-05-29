@@ -1,8 +1,8 @@
 
 let getTime = () => {
-
+    
     let date_ob = new Date();
-
+    
     // current date
     // adjust 0 before single digit date
     let date = ("0" + date_ob.getDate()).slice(-2);
@@ -12,10 +12,10 @@ let getTime = () => {
 
     // current year
     let year = date_ob.getFullYear();
-
+    
     // current hours
     let hours = date_ob.getHours();
-
+    
     // current minutes
     let minutes = date_ob.getMinutes();
 
@@ -23,11 +23,11 @@ let getTime = () => {
         minutes = '0' + minutes
     }
 
-
+    
 
     // current seconds
     let seconds = date_ob.getSeconds();
-
+    
     if (seconds < 10) {
         seconds = '0' + seconds
     }

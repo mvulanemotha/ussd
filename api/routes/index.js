@@ -267,9 +267,9 @@ router.get('/', async (req, res) => {
 
                     let count = 0
                     let accountBalance = 0
-
+                    
                     activeAccounts.forEach(el => {
-
+                        
 
                         if (el["accountBalance"] === undefined) {
                             accountBalance = 0
@@ -296,7 +296,7 @@ router.get('/', async (req, res) => {
         }
 
         // Enter amount to send to disbursememtn
-        console.log(text.length)
+
         if ((text.indexOf('*2*1*') !== -1) && ((text.length === 20)) && (text.indexOf('*2*1*00000') !== 0)) {
 
 
@@ -312,9 +312,9 @@ router.get('/', async (req, res) => {
         //after amount was entered
         if ((text.indexOf('*2*1*') !== -1) && (text.length > 20)) {
             
-            response = "SCBS :-) Coming soon"
+            response = "SCBS :-) Processing"
             closeOropenSession = 0
-            /*
+            
             //generate an uxxd 
             await disbursementHeader.token().then(async neWtoken => {
                 
@@ -331,7 +331,7 @@ router.get('/', async (req, res) => {
                 
                 })
             })
-            */
+            
 
             console.log(text)
             //have functions that will withdraw from the musoni account

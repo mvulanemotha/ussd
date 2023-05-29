@@ -18,7 +18,7 @@ let requestToTransfer = async (uuid, token, amount, msisdn) => {
 
             "amount": amount,
             "currency": "SZL",
-            "externalId": "09234287",
+            "externalId": "234284587",
             "payer": {
                 "partyIdType": "MSISDN",
                 "partyId": msisdn
