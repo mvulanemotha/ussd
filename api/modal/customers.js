@@ -287,9 +287,9 @@ let saveClientNumbers = async (account, name, contact, status) => {
 
         return await new Promise((resolve, reject) => {
 
-            let query = "insert into clientsnumbers (account , name , contact , status) select ?,?,?,?"
-
-            db.query(query, [account, name, contact, status], (err, result) => {
+            let query = "insert into clientsnumbers (account , name , contact , status) select ?,?,?,? where not exists (select account from clientsnumbers where account = ? ) limit 1"
+            
+            db.query(query, [account, name, contact, status , account], (err, result) => {
 
                 if (err) {
                     return reject(err)

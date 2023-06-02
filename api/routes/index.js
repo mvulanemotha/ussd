@@ -267,9 +267,9 @@ router.get('/', async (req, res) => {
 
                     let count = 0
                     let accountBalance = 0
-                    
+
                     activeAccounts.forEach(el => {
-                        
+
 
                         if (el["accountBalance"] === undefined) {
                             accountBalance = 0
@@ -306,32 +306,32 @@ router.get('/', async (req, res) => {
             response += "0. Exit";
 
             closeOropenSession = 1
-        
+
         }
-        
+
         //after amount was entered
         if ((text.indexOf('*2*1*') !== -1) && (text.length > 20)) {
-            
+
             response = "SCBS :-) Processing"
             closeOropenSession = 0
-            
+
             //generate an uxxd 
             await disbursementHeader.token().then(async neWtoken => {
-                
+
                 let token = neWtoken.data["access_token"]
                 let amount = text.slice(21)
-                
+
                 //create uxxID
                 uuID = uuid.v4();
-                
+
                 await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
-                    
+
                     console.log(payRes)
-                
-                
+
+
                 })
             })
-            
+
 
             console.log(text)
             //have functions that will withdraw from the musoni account
@@ -499,9 +499,6 @@ router.get('/', async (req, res) => {
 
         }
 
-
-
-
         if ((text.indexOf('*1') !== -1) && (text.indexOf('*1*') === -1) && (text.indexOf('*2*2*') === -1) && (text.indexOf('*2*1') === -1) && ((text.indexOf('*3')) === -1)) {   //// if 1 from menu is selected
 
             // get client products
@@ -648,6 +645,27 @@ router.post('/', async (req, res) => {
 
     // save a new client 
 
+    customer.saveClientNumbers(req.body.cfi, req.body.name, req.body.contact, 1).then((data) => {
+
+        if (data.length > 0) {
+
+            if (data["affectedRows"] === 1) {
+
+                res.json({ message: "saved" })
+
+            } else {
+
+                res.json({ message: "failed" })
+
+            }
+        } else {
+
+            res.json({ message: "failed" })
+
+        }
+
+
+    })
 
     //
 

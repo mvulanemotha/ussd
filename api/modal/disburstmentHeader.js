@@ -21,7 +21,7 @@ let token = async () => {
     let password = '8f79674de1ea46dc80653eac1d0fe485'  //process.env.apiKey
 
     let mtnCredentials = username + ':' + password
-
+    
     let buff = new Buffer.from(mtnCredentials)
 
     let base64Credentials = buff.toString('base64');
