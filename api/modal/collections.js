@@ -45,19 +45,19 @@ let requestToPay = async (uuid, payToken, amount, msisdn) => {
 
 // request to pay transaction status
 let paymentStatus = async (xreference, token) => {
-
+    
     try {
-
+        
         return await axios({
-
+            
             method: "get",
             url: 'https://proxy.momoapi.mtn.com/collection/v1_0/requesttopay/' + xreference,
             withCredentials: true,
             crossdomain: true,
             headers: headers.paymentStatusHeader(xreference, token)
         })
-
-
+    
+    
     } catch (error) {
         console.log(error)
     }
@@ -66,19 +66,19 @@ let paymentStatus = async (xreference, token) => {
 
 // check account balance
 let checkBalance = async (xreference_id, token) => {
-
+    
     try {
-
+        
         return await axios({
-
+            
             method: "get",
             url: process.env.tokenUrlCollections + 'v1_0/account/balance',
             withCredentials: true,
             crossdomain: true,
             headers: headers.apiCallsHeader(xreference_id, token)
-
+        
         })
-
+    
     } catch (error) {
         console.log(error)
     }
@@ -88,24 +88,24 @@ let checkBalance = async (xreference_id, token) => {
 
 // save made payment request in database
 let saveRequestTransaction = async (token, xxid, amount, phone, accountNo) => {
-
+    
     try {
-
+        
         return await new Promise((resolve, reject) => {
-
+            
             let query = "insert into collectionrequest(token , xxid , amount, phone , accountNo) select ?,?,?,?,? where not exists (select xxid from collectionrequest where xxid = ?) limit 1 "
             
             db.query(query, [token, xxid, amount, phone, accountNo, xxid], (err, result) => {
-
+                
                 if (err) {
                     return reject(err)
                 }
-
+                
                 return resolve(result)
-
+            
             })
         })
-
+    
     } catch (error) {
         console.log(error)
     }
@@ -115,24 +115,24 @@ let saveRequestTransaction = async (token, xxid, amount, phone, accountNo) => {
 
 //get data from database to get payment status
 let getPaymentStatus = async () => {
-
+    
     try {
-
+        
         return await new Promise((resolve, reject) => {
-
+            
             let query = "select * from collectionrequest where status = 0 limit 1"
-
+            
             db.query(query, [], (err, result) => {
-
+                
                 if (err) {
                     return reject(err)
                 }
-
+                
                 return resolve(result)
-
+            
             })
         })
-
+    
     } catch (error) {
         console.log(error)
     }
@@ -141,35 +141,35 @@ let getPaymentStatus = async () => {
 
 // update database to a failed response
 let updatepaymentRequest = async (status, token, xxid) => {
-
+    
     try {
-
+        
         return await new Promise((resolve, reject) => {
-
+            
             let query
-
+            
             //succesfully
             if (status === 1) {
                 query = "update collectionrequest set status = 1 where token = ? and xxid = ? limit 1"
             }
-
+            
             //failed request
             if (status === 2) {
                 query = "update collectionrequest set status = 2 where token = ? and xxid = ? limit 1"
             }
-
+            
             db.query(query, [token, xxid], (err, result) => {
-
+                
                 if (err) {
                     return reject(err)
                 }
-
+                
                 return resolve(result)
-
+            
             })
-
+        
         })
-
+    
     } catch (error) {
         console.log(error)
     }

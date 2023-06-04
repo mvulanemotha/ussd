@@ -312,7 +312,6 @@ router.get('/', async (req, res) => {
         //after amount was entered
         if ((text.indexOf('*2*1*') !== -1) && (text.length > 20)) {
 
-            response = "SCBS :-) Processing"
             closeOropenSession = 0
 
             //generate an uxxd 
@@ -326,8 +325,26 @@ router.get('/', async (req, res) => {
 
                 await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
 
-                    console.log(payRes)
+                    //check status
+                    if (payRes["status"] === 202) {
 
+                        //save request to pay details
+                        disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber)
+
+                        response = "Transfer Has Been Made"
+                        closeOropenSession = 0
+
+                    } else {
+
+                        response = "Failed To Make Transfer"
+                        closeOropenSession = 0
+
+                    }
+
+
+                }).catch((err) => {
+
+                    console.log(err.message)
 
                 })
             })
@@ -686,6 +703,52 @@ let countString = (str, letter) => {
     return count;
 }
 
+//check status of transfer
+
+setInterval(async () => {
+
+    try {
+
+        //get saved disbursement details
+        await disbursment.getTransferStatus().then(async data => {
+
+            if (data.length > 0) {
+
+                let xxid
+                let token
+                let accountNo
+                let amount
+                let phone
+
+                data.forEach(values => {
+
+                    xxid = values["xxid"]
+                    token = values["token"]
+                    accountNo = values["accountNo"]
+                    amount = values["amount"]
+                    phone = values["phone"]
+
+                })
+
+
+                //let status = dt.data["status"]
+                await disbursment.transferStatus(xxid, token).then(status => {
+
+                    console.log(status)
+
+                })
+
+            }
+
+        })
+
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}, 5000);
+
 
 // function to check payment status
 setInterval(async () => {
@@ -742,7 +805,7 @@ setInterval(async () => {
 
                             accountNo = accountNo.replace(/00000/, 'xxxxx')
 
-                            let message = ':-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
+                            let message = 'SCBS :-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
                             sms.sendMessage(phone, message)
 
                         })
