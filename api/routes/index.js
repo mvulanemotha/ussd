@@ -148,7 +148,7 @@ router.get('/', async (req, res) => {
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
 
-                    response = " Menu :-)<br>1. My Accounts<br>2. Mtn Momo Transfers <br>3. Change Password <br><br>00. Exit";
+                    response = " Menu :-)<br>1. My Accounts<br>2. MOMO Transfers <br>3. Change Password <br><br>00. Exit";
                     closeOropenSession = 1
 
                 } else {
@@ -165,7 +165,7 @@ router.get('/', async (req, res) => {
 
         } else if (text == '1*0') { //Have viewed my products now i want to view see my menu again
 
-            response = " Menu :-)<br>1. My Accounts<br>2. Mtn Momo Transfers <br>3. Change Password <br><br>00. Exit";
+            response = " Menu :-)<br>1. My Accounts<br>2. MOMO Transfers <br>3. Change Password <br><br>00. Exit";
 
             closeOropenSession = 1
 
@@ -308,18 +308,19 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1
 
         }
-
+        
         //after amount was entered
         if ((text.indexOf('*2*1*') !== -1) && (text.length > 20)) {
 
             closeOropenSession = 0
-
+            
             //generate an uxxd 
             await disbursementHeader.token().then(async neWtoken => {
 
                 let token = neWtoken.data["access_token"]
                 let amount = text.slice(21)
-
+                let accountNo = text.slice(11 , 20)
+                
                 //create uxxID
                 uuID = uuid.v4();
 
@@ -329,8 +330,8 @@ router.get('/', async (req, res) => {
                     if (payRes["status"] === 202) {
 
                         //save request to pay details
-                        disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber)
-
+                        disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber , accountNo)
+                        
                         response = "Transfer Has Been Made"
                         closeOropenSession = 0
 
