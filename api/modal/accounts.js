@@ -21,6 +21,27 @@ let clientsProducts = async (accountNo) => {
     })
 }
 
+// check savings account details
+let getAccountSavingsAccountBalance = async (accountNo) => {
+
+    try {
+
+        return await axios({
+
+            method: "get",
+            url: process.env.url + "savingsaccounts/" + accountNo,
+            withCredentials: true,
+            crossdomain: true,
+            headers: headers.headersMusoni()
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
 
 //get client accounts where 
 let getClientAccount = async (username) => {
@@ -74,4 +95,4 @@ let accountDetails = async (accountNo) => {
 
 
 
-module.exports = { clientsProducts, getClientAccount, accountDetails }
+module.exports = { clientsProducts, getClientAccount, accountDetails, getAccountSavingsAccountBalance }

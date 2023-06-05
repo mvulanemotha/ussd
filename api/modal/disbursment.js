@@ -11,11 +11,11 @@ dotenv.config();
 //get balance of client
 
 let requestToTransfer = async (uuid, token, amount, msisdn) => {
-    
+
     try {
-        
+
         let data = {
-            
+
             "amount": amount,
             "currency": "SZL",
             "externalId": "234284587",
@@ -26,7 +26,7 @@ let requestToTransfer = async (uuid, token, amount, msisdn) => {
             "payerMessage": "SCBS MOMO TRANSFER",
             "payeeNote": "SCBS MOMO TRANSFER"
         }
-        
+
         return await axios({
             method: "post",
             url: 'https://proxy.momoapi.mtn.com/disbursement/v1_0/transfer',
@@ -35,8 +35,8 @@ let requestToTransfer = async (uuid, token, amount, msisdn) => {
             headers: headers.apiCallsHeader(uuid, token),
             data: data
         })
-    
-    
+
+
     } catch (error) {
         console.log(error)
     }
@@ -46,34 +46,34 @@ let requestToTransfer = async (uuid, token, amount, msisdn) => {
 
 
 // make a deposit 
-let makeWithdrawal = async (amount, accountNo, phoneNumber, depositDate) => {
-    
+let makeWithdrawal = async (amount, accountNo, phoneNumber, withdrawalDate) => {
+
     try {
-        
+
         let url = 'https://api.live.irl.musoniservices.com/v1/'
-        
+
         let data = {
             "locale": "en",
             "dateFormat": "dd MMMM yyyy",
-            "transactionDate": depositDate,
+            "transactionDate": withdrawalDate,
             "transactionAmount": amount,
             "paymentTypeId": 177,
             "accountNumber": accountNo,
-            "receiptNumber": "Tranfered To " + phoneNumber + " Momo Account",
+            "receiptNumber": "Withdrawal by " + phoneNumber + " Momo Account",
             "bankNumber": "SCBS"
         }
-        
+
         return await axios({
-            
+
             method: "post",
             url: url + "savingsaccounts/" + accountNo + "/transactions?command=withdrawal",
             withCredentials: true,
             crossdomain: true,
             headers: headersMusoni.headersMusoni(),
             data: data
-        
+
         })
-    
+
     } catch (error) {
         console.log(error)
     }
@@ -83,25 +83,25 @@ let makeWithdrawal = async (amount, accountNo, phoneNumber, depositDate) => {
 // store a disbursement request
 
 let saveDisbursmentRequest = async (token, xxid, amount, phone, accountNo) => {
-    
+
     try {
-        
+
         return await new Promise((resolve, reject) => {
-            
-            let query = "insert into disbursmentrequest(token , xxid , amount, phone , accountNo) select ?,?,?,?,? where not exists (select xxid from disbursmentrequest where xxid = ?) limit 1 "
-            
+
+            let query = "insert into disbursmentrequest(token , xxid , amount, phone , accountNo) select ?,?,?,?,? where not exists (select xxid from disbursmentrequest where xxid = ? limit 1) "
+
             db.query(query, [token, xxid, amount, phone, accountNo, xxid], (err, result) => {
-                
+
                 if (err) {
                     return reject(err)
                 }
-                
+
                 return resolve(result)
-            
+
             })
-        
+
         })
-    
+
     } catch (error) {
         console.log(error.message)
     }
@@ -111,24 +111,24 @@ let saveDisbursmentRequest = async (token, xxid, amount, phone, accountNo) => {
 
 //get data from database to get payment status
 let getTransferStatus = async () => {
-    
+
     try {
-        
+
         return await new Promise((resolve, reject) => {
-            
+
             let query = "select * from disbursmentrequest where status = 0 limit 1"
-            
+
             db.query(query, [], (err, result) => {
-                
+
                 if (err) {
                     return reject(err)
                 }
-                
+
                 return resolve(result)
-            
+
             })
         })
-    
+
     } catch (error) {
         console.log(error)
     }
@@ -137,35 +137,35 @@ let getTransferStatus = async () => {
 
 // update database to a failed response
 let updateTransferRequest = async (status, token, xxid) => {
-    
+
     try {
-        
+
         return await new Promise((resolve, reject) => {
-            
+
             let query
-            
+
             //succesfully
             if (status === 1) {
                 query = "update disbursmentrequest set status = 1 where token = ? and xxid = ? limit 1"
             }
-            
+
             //failed request
             if (status === 2) {
                 query = "update disbursmentrequest set status = 2 where token = ? and xxid = ? limit 1"
             }
-            
+
             db.query(query, [token, xxid], (err, result) => {
-                
+
                 if (err) {
                     return reject(err)
                 }
-                
+
                 return resolve(result)
-            
+
             })
-        
+
         })
-    
+
     } catch (error) {
         console.log(error)
     }
@@ -174,23 +174,23 @@ let updateTransferRequest = async (status, token, xxid) => {
 
 // check status
 let transferStatus = async (xreference, token) => {
-    
+
     try {
-        
+
         return await axios({
-            
+
             method: "get",
             url: 'https://proxy.momoapi.mtn.com/disbursement/v1_0/transfer/' + xreference,
             withCredentials: true,
             crossdomain: true,
-            headers: headers.apiCallsHeader(uuid, token),
+            headers: headers.apiCallsHeader(xreference, token),
         })
-    
-    
+
+
     } catch (error) {
-        console.log(error)
+        //console.log(error)
     }
 
 }
 
-module.exports = { makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus , transferStatus }
+module.exports = { makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }

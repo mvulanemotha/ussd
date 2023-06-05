@@ -308,52 +308,69 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1
 
         }
-        
+
         //after amount was entered
         if ((text.indexOf('*2*1*') !== -1) && (text.length > 20)) {
 
             closeOropenSession = 0
-            
-            //generate an uxxd 
-            await disbursementHeader.token().then(async neWtoken => {
 
-                let token = neWtoken.data["access_token"]
-                let amount = text.slice(21)
-                let accountNo = text.slice(11 , 20)
-                
-                //create uxxID
-                uuID = uuid.v4();
-
-                await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
-
-                    //check status
-                    if (payRes["status"] === 202) {
-
-                        //save request to pay details
-                        disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber , accountNo)
-                        
-                        response = "Transfer Has Been Made"
-                        closeOropenSession = 0
-
-                    } else {
-
-                        response = "Failed To Make Transfer"
-                        closeOropenSession = 0
-
-                    }
+            let amount = text.slice(21)
+            let accountNo = text.slice(11, 20)
+            let accountBalanceMusoni = 0
 
 
-                }).catch((err) => {
+            await account.getAccountSavingsAccountBalance(accountNo).then(el => {
 
-                    console.log(err.message)
+                accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
 
-                })
+            }).catch(err => {
+
+                console.log(err)
+
             })
 
+            if (accountBalanceMusoni < amount) {
+                console.log("test")
+                response = "SCBS :-) You have insuffient funds."
+                closeOropenSession = 0;
 
-            console.log(text)
-            //have functions that will withdraw from the musoni account
+            } else {
 
+                //generate an uxxd 
+                await disbursementHeader.token().then(async neWtoken => {
+
+                    let token = neWtoken.data["access_token"]
+
+                    // check if customer has enough money in his savings acccount
+                    
+                    //create uxxID
+                    uuID = uuid.v4();
+
+                    await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
+
+                        //check status
+                        if (payRes["status"] === 202) {
+
+                            //save request to pay details
+                            disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo)
+
+                            response = "Transfer Has Been Made."
+                            closeOropenSession = 0
+
+                        } else {
+
+                            response = "Failed To Make Transfer."
+                            closeOropenSession = 0
+                        }
+
+
+                    }).catch((err) => {
+
+                        // console.log(err.message)
+
+                    })
+                })
+            } // end of transfer functions
         }
 
 
@@ -710,6 +727,8 @@ setInterval(async () => {
 
     try {
 
+        let newDate = time.getTime().slice(0, 10)
+
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
 
@@ -734,9 +753,39 @@ setInterval(async () => {
 
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(status => {
+                    
+                    //check 
+                    if (status.data["status"] === "FAILED") {
 
-                    console.log(status)
+                        // update database when the transaction failed    
+                        disbursment.updateTransferRequest(2, token, xxid)
 
+                    }
+
+                    //check if the trasaction was a successs
+                    if (status.data["status"] === "SUCCESSFUL") {
+
+                        //send sms to client
+                        let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
+                        sms.sendMessage(phone, message)
+
+                        disbursment.updateTransferRequest(1, token, xxid)
+
+                        //withdraw from Musoni
+                        disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
+
+                            console.log(wdata)
+                        
+                        })
+
+                        // withdraw from the 000004257
+                        disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(wdata => {
+
+                            console.log(wdata)
+
+                        })
+
+                    }
                 })
 
             }
