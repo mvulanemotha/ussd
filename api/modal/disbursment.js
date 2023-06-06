@@ -57,7 +57,7 @@ let makeWithdrawal = async (amount, accountNo, phoneNumber, withdrawalDate) => {
             "dateFormat": "dd MMMM yyyy",
             "transactionDate": withdrawalDate,
             "transactionAmount": amount,
-            "paymentTypeId": 177,
+            "paymentTypeId": 223,
             "accountNumber": accountNo,
             "receiptNumber": "Withdrawal by " + phoneNumber + " Momo Account",
             "bankNumber": "SCBS"

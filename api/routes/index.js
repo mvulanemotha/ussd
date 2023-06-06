@@ -175,7 +175,7 @@ router.get('/', async (req, res) => {
             response += "1. From Savings<br>2. To Savings<br><br>00. Back<br>0. Exit";
             closeOropenSession = 1
         }
-
+        
 
         //change user password
         if (((text.indexOf('*3')) !== -1) && (text.indexOf('*3*') === -1)) {
@@ -342,7 +342,7 @@ router.get('/', async (req, res) => {
                     let token = neWtoken.data["access_token"]
 
                     // check if customer has enough money in his savings acccount
-                    
+
                     //create uxxID
                     uuID = uuid.v4();
 
@@ -712,7 +712,7 @@ let countString = (str, letter) => {
 
     // looping through the items
     for (let i = 0; i < str.length; i++) {
-
+        
         // check if the character is at that position
         if (str.charAt(i) == letter) {
             count += 1;
@@ -725,9 +725,16 @@ let countString = (str, letter) => {
 
 setInterval(async () => {
 
+
     try {
 
         let newDate = time.getTime().slice(0, 10)
+
+        /*console.log(newDate)
+        console.log(time.myDate(newDate))*/
+
+        //06 June 2023
+
 
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
@@ -750,13 +757,22 @@ setInterval(async () => {
 
                 })
 
-
+                
                 //let status = dt.data["status"]
-                await disbursment.transferStatus(xxid, token).then(status => {
+                await disbursment.transferStatus(xxid, token).then(async status => {
+
+                    //console.log(status)
+
+                    //console.log(status.data["status"])
+
+                    if (status === undefined) {
+                        return
+                    }
                     
                     //check 
                     if (status.data["status"] === "FAILED") {
 
+                        console.log(status.data["status"])
                         // update database when the transaction failed    
                         disbursment.updateTransferRequest(2, token, xxid)
 
@@ -765,36 +781,47 @@ setInterval(async () => {
                     //check if the trasaction was a successs
                     if (status.data["status"] === "SUCCESSFUL") {
 
+                        console.log(status.data["status"])
+                        
                         //send sms to client
                         let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
                         sms.sendMessage(phone, message)
 
                         disbursment.updateTransferRequest(1, token, xxid)
 
-                        //withdraw from Musoni
-                        disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
+                        //console.log("we are in")
 
-                            console.log(wdata)
-                        
+                        //withdraw from Musoni
+                        await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
+
+                            //console.log(wdata)
+                            if (wdata.data !== undefined) {
+                                console.log(wdata.data)
+                            }
+
+                        }).catch(err => {
+                            console.log(err.message)
                         })
 
                         // withdraw from the 000004257
-                        disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(wdata => {
+                        await disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(wdata => {
 
-                            console.log(wdata)
+                            if (wdata.data !== undefined) {
+                                console.log(wdata.data)
+                            }
 
+                        }).catch(err => {
+                            console.log(err.message)
                         })
-
                     }
+                }).catch(err => {
+                    console.log(err.message)
                 })
-
             }
-
         })
 
-
     } catch (error) {
-        console.log(error.message)
+        //console.log(error)
     }
 
 }, 5000);
