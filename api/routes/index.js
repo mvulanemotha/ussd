@@ -15,7 +15,7 @@ const time = require('../modal/datetime')
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = "SCBS :-) Wrong input fields were entered :)";
+    var response = "SCBS :-) Network Error";
 
     try {
 
@@ -177,8 +177,6 @@ router.get('/', async (req, res) => {
 
         //try and remove the password on the text
 
-        console.log(text.slice(7))
-
         text = text.slice(7)
         /*
         if (text == '1*0') { //Have viewed my products now i want to view see my menu again
@@ -212,9 +210,9 @@ router.get('/', async (req, res) => {
         */
 
         // enter new password and update password in the datanase
-        if ((text === "3")) {
+        if ((text == "3")) {
 
-
+            
             response = "Enter New password"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
