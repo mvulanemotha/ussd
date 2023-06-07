@@ -165,7 +165,7 @@ router.get('/', async (req, res) => {
 
                     //update status of being locked
                     customer.updateFailedLogins(contact)
-                    
+
                     // get loggin attempts
                     response = `SCBS :-) Failed to login, you will be locked out.`;
                     closeOropenSession = 0
@@ -197,20 +197,22 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1
         }
 
-
+        /*
         //change user password
         if (((text.indexOf('*3')) !== -1) && (text.indexOf('*3*') === -1)) {
-
+            
             response = "Enter Old Password."
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
-
+            
             closeOropenSession = 1
-
+        
         }
+        
+        */
 
         // enter new password and update password in the datanase
-        if ((text.indexOf('*3*') !== -1)) {
+        if ((text === "3")) {
 
 
             response = "Enter New password"
@@ -222,27 +224,39 @@ router.get('/', async (req, res) => {
 
         // change passwords
 
-        if ((text.indexOf('*3*') !== -1) && (countString(text, '*') === 3) && (text.length === 22)) {
-
+        if ((text.indexOf('3*') !== -1)) {
+            
             //first check the number of characters from the strings
-            let newPass = text.slice(16)
+            let newPass = text.slice(2)
             let phone = phoneNumber.slice(3)
 
-            // update database with new password
+            //check if input is a six digit value
 
-            await customer.changePassword(phone, newPass).then((data) => {
+            if (text.slice(2).length !== 6) {
 
-                if (data["affectedRows"] === 1) {
+                console.log("length error")
+                response = "SCBS :-) Password should be a 6 digit value"
+                closeOropenSession = 0
 
-                    response = "SCBS :-)<br> Password Changed Successfully."
+            } else {
 
-                } else {
+                // update database with new password
 
-                    response = "SCBS :-)<br> Failed To Change Password."
-                }
-            })
+                await customer.changePassword(phone, newPass).then((data) => {
 
-            closeOropenSession = 0;
+                    if (data["affectedRows"] === 1) {
+                        
+                        response = "SCBS :-)<br> Password Changed Successfully."
+
+                    } else {
+                        
+                        response = "SCBS :-)<br> Failed To Change Password."
+                    }
+                })
+                
+                closeOropenSession = 0;
+
+            }
 
         }
 
@@ -509,7 +523,7 @@ router.get('/', async (req, res) => {
                 })
             })
         }
-        
+
 
         //transfer money in mobile money
         if ((text.indexOf('2*2*') !== -1) && (text.length === 5)) {
@@ -518,7 +532,7 @@ router.get('/', async (req, res) => {
 
             response += "<br>00. Back";
             response += "<br>0. Exit";
-            
+
             closeOropenSession = 1
 
         }
@@ -528,7 +542,7 @@ router.get('/', async (req, res) => {
         if ((text.indexOf('2*2*') !== -1) && (text.length > 5)) {
 
             //CALL FUNCTION TO MAKE A TRANSFER FROM MOMO TO MY SAVINGS
-            
+
 
             let accountNo
             let amount = text.slice(6)
