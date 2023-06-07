@@ -219,8 +219,10 @@ router.get('/', async (req, res) => {
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
 
-        }
+            closeOropenSession = 1
 
+        }
+        
 
         // change passwords
 
