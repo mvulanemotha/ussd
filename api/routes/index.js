@@ -66,8 +66,6 @@ router.get('/', async (req, res) => {
 
         text = ussdR.ussdRouter(text)
 
-        console.log(text)
-
         let contact = phoneNumber.slice(3)
 
         //remove the pasword
@@ -125,10 +123,22 @@ router.get('/', async (req, res) => {
 
                             await customer.saveCustomers(account, username, 0, password).then(saved => {
 
+                                if (saved["affectedRows"] === 1) {
 
+                                    //send sms to the client
+                                    let message = "Please use this password on SCBS USSD " + password;
 
-                                response = "SCBS :-) <br><br> Please use the password sent to you to login thanks.";
-                                closeOropenSession = 0
+                                    sms.sendMessage(contact, message)
+
+                                    response = "SCBS :-) <br>Please use the password sent to you to login thanks.";
+                                    closeOropenSession = 0
+
+                                } else {
+
+                                    response = "SCBS :-) <br>Please SCBS at +268 24171975 registration failed.";
+                                    closeOropenSession = 0
+                                
+                                }
 
                             })
 
@@ -212,7 +222,7 @@ router.get('/', async (req, res) => {
         // enter new password and update password in the datanase
         if ((text == "3")) {
 
-            
+
             response = "Enter New password"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
@@ -220,12 +230,12 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1
 
         }
-        
+
 
         // change passwords
 
         if ((text.indexOf('3*') !== -1)) {
-            
+
             //first check the number of characters from the strings
             let newPass = text.slice(2)
             let phone = phoneNumber.slice(3)
@@ -245,15 +255,15 @@ router.get('/', async (req, res) => {
                 await customer.changePassword(phone, newPass).then((data) => {
 
                     if (data["affectedRows"] === 1) {
-                        
+
                         response = "SCBS :-)<br> Password Changed Successfully."
 
                     } else {
-                        
+
                         response = "SCBS :-)<br> Failed To Change Password."
                     }
                 })
-                
+
                 closeOropenSession = 0;
 
             }
