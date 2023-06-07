@@ -92,7 +92,61 @@ let accountDetails = async (accountNo) => {
 
 }
 
+//store selected account from multiple accounts
+
+let storeSelectedAccount = async (sessionId, accountNo, input, row) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "insert into selectedAccounts (sessionId , accountNo , input , selectedRow) select ?,?,?,? "
+                + " where not exists ( select sessionId , accountNo , input , selectedRow from selectedAccounts "
+                + " where sessionId = ? and accountNo = ? and input = ? and selectedRow = ?)"
+            
+            db.query(query, [sessionId, accountNo, input, row, sessionId, accountNo, input, row], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+                return resolve(result)
+            
+            })
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+// retrive selected account
+let getSelectedAccount = async (input, sessionId, row) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "select * from selectedAccounts where sessionId = ? and input = ? and selectedRow = ?"
+
+            db.query(query, [sessionId, input, row], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (error) {
+        console.log()
+    }
+
+}
 
 
-
-module.exports = { clientsProducts, getClientAccount, accountDetails, getAccountSavingsAccountBalance }
+module.exports = { getSelectedAccount, storeSelectedAccount, clientsProducts, getClientAccount, accountDetails, getAccountSavingsAccountBalance }
