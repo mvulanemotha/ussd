@@ -165,7 +165,7 @@ router.get('/', async (req, res) => {
 
                     //update status of being locked
                     customer.updateFailedLogins(contact)
-
+                    
                     // get loggin attempts
                     response = `SCBS :-) Failed to login, you will be locked out.`;
                     closeOropenSession = 0
@@ -528,7 +528,7 @@ router.get('/', async (req, res) => {
         if ((text.indexOf('2*2*') !== -1) && (text.length > 5)) {
 
             //CALL FUNCTION TO MAKE A TRANSFER FROM MOMO TO MY SAVINGS
-
+            
 
             let accountNo
             let amount = text.slice(6)
