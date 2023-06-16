@@ -137,7 +137,7 @@ router.get('/', async (req, res) => {
 
                                     response = "SCBS :-) <br>Please SCBS at +268 24171975 registration failed.";
                                     closeOropenSession = 0
-                                
+
                                 }
 
                             })
@@ -825,17 +825,10 @@ router.post('/', async (req, res) => {
 
     customer.saveClientNumbers(req.body.cfi, req.body.name, req.body.contact, 1).then((data) => {
 
-        if (data.length > 0) {
+        if (data["affectedRows"] > 0) {
 
-            if (data["affectedRows"] === 1) {
+            res.json({ message: "saved" })
 
-                res.json({ message: "saved" })
-
-            } else {
-
-                res.json({ message: "failed" })
-
-            }
         } else {
 
             res.json({ message: "failed" })
@@ -844,8 +837,8 @@ router.post('/', async (req, res) => {
 
 
     })
-
-    //
+    
+    //ussdName ussdNumber ussdCFI
 
 })
 
