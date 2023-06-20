@@ -404,7 +404,6 @@ router.get('/', async (req, res) => {
             })
 
             if (accountBalanceMusoni < amount) {
-                console.log("test")
                 response = "SCBS :-) You have insuffient funds."
                 closeOropenSession = 0;
 
@@ -557,8 +556,6 @@ router.get('/', async (req, res) => {
             let accountNo
             let amount = text.slice(6)
 
-            console.log(amount)
-
             //get row and input 
             let input = text.slice(0, 3)
             let row = text[4]
@@ -590,8 +587,6 @@ router.get('/', async (req, res) => {
                     //console.log(data)
 
                     if (data["status"] !== undefined) {
-
-                        console.log(data)
 
                         if (data["status"] === 202) {
 
@@ -837,10 +832,154 @@ router.post('/', async (req, res) => {
 
 
     })
-    
+
     //ussdName ussdNumber ussdCFI
 
 })
+
+
+//from client app check if number of client match the one in Musoni
+//status
+router.get('/checkmomoappnumber', async (req, res) => {
+
+    let number = "268" + req.query.number
+
+    await token.token().then(async (data) => {
+
+        let token = data.data
+
+        //get a token then use it to make request
+        await collections.momoStatus(token["access_token"], number).then(status => {
+
+            res.json({
+                status: status.data["result"],
+                phone: number
+            })
+
+        }).catch(err => {
+            console.log(err.message)
+        })
+
+    }).catch((err) => {
+        console.log(err.message)
+    })
+
+})
+
+// transfer to account on app from momo
+router.post("/clientappmomorequesttopay", async (req, res) => {
+
+    //expects a json format data
+
+    let accountNo = req.body.account
+    let amount = req.body.amount
+    let cellphone = req.body.cellphone
+
+
+
+    //deposit to this account
+    uuID = uuid.v4();
+
+
+    await token.token().then(async (data) => {
+
+        let token = data.data
+
+        //get a token then use it to make request
+
+        await collections.requestToPay(uuID, token["access_token"], amount, cellphone).then(async (data) => {
+
+            //console.log(data)
+
+            if (data["status"] !== undefined) {
+
+                if (data["status"] === 202) {
+
+                    //response = "Please make an approvals"
+
+                    // store in database
+
+                    await collections.saveRequestTransaction(token["access_token"], uuID, amount, cellphone, accountNo).then(async (dt) => {
+
+                        if (dt["affectedRows"] === 1) {
+
+                            res.json({ message: "transfered" })
+
+                        } else {
+                            res.json({ message: "failed" })
+
+                        }
+
+
+                    }).catch(err => {
+
+                        console.log(err.message)
+
+                    })
+
+                } else {
+                    res.json({ message: "failed" })
+                }
+
+            }
+
+
+        }).catch((err) => {
+
+            console.log(err)
+
+        })
+
+
+    }).catch((err) => {
+
+        console.log(err)
+
+    })
+})
+
+// transfer funds to momo account
+router.post("/sendmoneytomomo", async (req, res) => {
+
+    console.log(req.body)
+
+    /*
+    await disbursementHeader.token().then(async neWtoken => {
+
+        let token = neWtoken.data["access_token"]
+
+        // check if customer has enough money in his savings acccount
+
+        //create uxxID
+        uuID = uuid.v4();
+
+        await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
+
+            //check status
+            if (payRes["status"] === 202) {
+
+                //save request to pay details
+                disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo)
+
+                response = "Transfer Has Been Made."
+                closeOropenSession = 0
+
+            } else {
+
+                response = "Failed To Make Transfer."
+                closeOropenSession = 0
+            }
+
+
+        }).catch((err) => {
+
+             console.log(err.message)
+
+        })
+    })
+*/
+})
+
 
 
 let countString = (str, letter) => {

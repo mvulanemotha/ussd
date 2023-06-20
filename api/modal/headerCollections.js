@@ -20,7 +20,7 @@ let paymentStatusHeader = (xreference_id, token) => {
 
 // requestTopay header
 let apiCallsHeader = (reference_id, token) => {
-
+    
     return header = {
         'X-Reference-Id': reference_id,
         'Ocp-Apim-Subscription-Key': 'b38eedce669f43808c7e5ac7e33b249e', //process.env.SubscriptionKey, //process.env.collections_secondary_key,
