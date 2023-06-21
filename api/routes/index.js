@@ -941,9 +941,14 @@ router.post("/clientappmomorequesttopay", async (req, res) => {
 // transfer funds to momo account
 router.post("/sendmoneytomomo", async (req, res) => {
 
-    console.log(req.body)
+    //check balance 
 
-    /*
+    //{ cellphone: '26876431551', amount: 10, account: '000004192' }
+
+    let amount = req.body.amount
+    let phoneNumber = req.body.cellphone
+    let accountNo = req.body.account
+
     await disbursementHeader.token().then(async neWtoken => {
 
         let token = neWtoken.data["access_token"]
@@ -961,23 +966,21 @@ router.post("/sendmoneytomomo", async (req, res) => {
                 //save request to pay details
                 disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo)
 
-                response = "Transfer Has Been Made."
-                closeOropenSession = 0
+                res.json({ "message": "transfred" })
 
             } else {
 
-                response = "Failed To Make Transfer."
-                closeOropenSession = 0
+                res.json({ "message": "failed" })
             }
 
 
         }).catch((err) => {
 
-             console.log(err.message)
+            console.log(err.message)
 
         })
     })
-*/
+
 })
 
 
@@ -1056,16 +1059,17 @@ setInterval(async () => {
                     //check if the trasaction was a successs
                     if (status.data["status"] === "SUCCESSFUL") {
 
-                        console.log(status.data["status"])
-
                         //send sms to client
                         let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
                         sms.sendMessage(phone, message)
 
                         disbursment.updateTransferRequest(1, token, xxid)
 
-                        //console.log("we are in")
+                        await disbursment.payMoMoCharge(accountNo, amount, time.myDate(newDate)).then(payMoMo => {
 
+                            console.log(payMoMo)
+
+                        })
                         //withdraw from Musoni
                         await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
 
@@ -1088,6 +1092,10 @@ setInterval(async () => {
                         }).catch(err => {
                             console.log(err.message)
                         })
+
+                        // create a charge
+
+
                     }
                 }).catch(err => {
                     console.log(err.message)
