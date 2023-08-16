@@ -12,7 +12,7 @@ let clientsProducts = async (accountNo) => {
 
 
     return await axios({
-
+        
         method: "get",
         url: process.env.url + "clients/" + accountNo + "/accounts",
         withCredentials: true,

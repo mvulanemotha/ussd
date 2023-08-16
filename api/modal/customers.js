@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 const db = require('../../db/database')
 const { default: axios } = require('axios');
+const headers = require("../modal/header")
 dotenv.config();
 
 
@@ -288,8 +289,8 @@ let saveClientNumbers = async (account, name, contact, status) => {
         return await new Promise((resolve, reject) => {
 
             let query = "insert into clientsnumbers (account , name , contact , status) select ?,?,?,? where not exists (select account from clientsnumbers where account = ? ) limit 1"
-            
-            db.query(query, [account, name, contact, status , account], (err, result) => {
+
+            db.query(query, [account, name, contact, status, account], (err, result) => {
 
                 if (err) {
                     return reject(err)
@@ -326,7 +327,7 @@ let checkNewUser = async (contact) => {
                 return resolve(result)
 
             })
-        
+
         })
 
     } catch (error) {
@@ -335,5 +336,27 @@ let checkNewUser = async (contact) => {
 
 }
 
+// get clients details
 
-module.exports = { checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }
+let getClientDetails = async (clientNo) => {
+
+    try {
+
+        return await axios({
+
+            method: "get",
+            url: process.env.url + "clients/" + clientNo,
+            withCredentials: true,
+            crossdomain: true,
+            headers: headers.headersMusoni()
+        })
+
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+
+module.exports = { getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }

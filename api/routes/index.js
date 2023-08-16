@@ -8,7 +8,6 @@ const collections = require('../modal/collections')
 const token = require('../modal/headerCollections')
 const disbursment = require('../modal/disbursment')
 const disbursementHeader = require('../modal/disburstmentHeader')
-
 const sms = require('../modal/sms')
 const time = require('../modal/datetime')
 
@@ -28,7 +27,6 @@ router.get('/', async (req, res) => {
         let dbText = ""
 
         // get functions to help track our progress
-
         // add new session in database
 
         if (newrequest === "1") {
@@ -93,7 +91,7 @@ router.get('/', async (req, res) => {
 
                     } else {
 
-                        response = `SCBS :-)Please note user account has been locked.`;
+                        response = `SCBS :-)<br>Please note your user account has been locked.`;
                         closeOropenSession = 0
 
                     }
@@ -135,16 +133,15 @@ router.get('/', async (req, res) => {
 
                                 } else {
 
-                                    response = "SCBS :-) <br>Please SCBS at +268 24171975 registration failed.";
+                                    response = "SCBS :-) <br>Please contact SCBS at +268 24171975 registration failed.";
                                     closeOropenSession = 0
 
                                 }
-
                             })
 
                         } else {
 
-                            response = "Welcome to SCBS please contact 24171975 for more info.";
+                            response = "Sorry, you are not registered with Status Capital. Please visit the nearest branch to get registered or Call 24171975";
                             closeOropenSession = 0
 
                         }
@@ -167,8 +164,7 @@ router.get('/', async (req, res) => {
 
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
-                    console.log("check")
-                    response = " Menu :-)<br>1. My Accounts<br>2. MoMo Transfers <br>3. Change Password <br><br>00. Exit";
+                    response = " Menu :-)<br>1. My Accounts<br>2. MoMo <br>3. Utilities <br> 4. Prepaid   <br>5. Settings <br><br>0. Exit";
                     closeOropenSession = 1
 
                 } else {
@@ -188,15 +184,6 @@ router.get('/', async (req, res) => {
         //try and remove the password on the text
 
         text = text.slice(7)
-        /*
-        if (text == '1*0') { //Have viewed my products now i want to view see my menu again
-            
-            response = " Menu :-)<br>1. My Accounts<br>2. MOMO Transfers <br>3. Change Password <br><br>00. Exit";
-            
-            closeOropenSession = 1
-        
-        }
-        */
 
         if ((text === "2")) { // viewing mtn momo
 
@@ -205,46 +192,160 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1
         }
 
-        /*
-        //change user password
-        if (((text.indexOf('*3')) !== -1) && (text.indexOf('*3*') === -1)) {
-            
-            response = "Enter Old Password."
+        // utilities
+        if (text === "3") {
+
+            response = "SCBS :-)<br><br>"
+            response += "1. EWSC"
+
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
-            
+
             closeOropenSession = 1
-        
+
         }
-        
-        */
+
+        if (text === "3*1") {
+
+            response = "SCBS :-)<br><br>"
+            response += "Coming Soon"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
+
+        //prepaid 
+        if (text === "4") {
+
+            response = "SCBS :-)<br>"
+            response += "1. Airtime<br>"
+            response += "2. Bundles <br>"
+            response += "3. Electricity"
+
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
+
+        if (text === "4*1") {
+
+            response = "SCBS :-)<br><br>"
+            response += "Coming Soon"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
+
+
+        if (text === "4*2") {
+
+            response = "SCBS :-)<br><br>"
+            response += "Coming Soon"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
+
+        if (text === "4*3") {
+
+            response = "SCBS :-)<br><br>"
+            response += "Coming Soon"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
+
+        // gives customer a menu of a change of password
+        if (text == "5") {
+
+            response = "SCBS :-)<br>"
+            response += "1. My Profile<br>"
+            response += "2. Change Password"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+
+        }
 
         // enter new password and update password in the datanase
-        if ((text == "3")) {
+        if ((text == "5*2")) {
+
+            response = "SCBS :-)<br>"
+            response += "You are about to change your password."
+            response += "<br><br>Enter New password"
+            response += "<br><br>00 Back"
+            response += "<br>0 Exit"
+
+            closeOropenSession = 1
+        }
+
+        //display client info
+        if (text == "5*1") {
 
 
-            response = "Enter New password"
+            let contact = phoneNumber.slice(3)
+            // get customer details
+            await account.getClientAccount(contact).then(async (data) => {
+
+                let clientNumber;
+
+                data.forEach(el => {
+                    clientNumber = el["account"]
+                })
+
+                // call function to display customer info
+
+                response = "My Profile :-)<br>"
+
+                await customer.getClientDetails(clientNumber).then(dt => {
+
+                    // return birthdate
+
+                    let newDate = time.birthDate(dt.data.dateOfBirth[0], dt.data.dateOfBirth[1], dt.data.dateOfBirth[2])
+
+
+                    response += dt.data.displayName + "<br>"
+                    response += "D.O.B  " + newDate + "<br>"
+                    response += dt.data.mobileNo + "<br>"
+                    response += dt.data.emailAddress
+                })
+
+            }).catch(errr => {
+
+                console.log(errr.message)
+
+            })
+
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
 
             closeOropenSession = 1
 
         }
-
 
         // change passwords
 
-        if ((text.indexOf('3*') !== -1)) {
+        if ((text.indexOf('5*2*') !== -1)) {
 
             //first check the number of characters from the strings
-            let newPass = text.slice(2)
+            let newPass = text.slice(4)
             let phone = phoneNumber.slice(3)
 
             //check if input is a six digit value
 
-            if (text.slice(2).length !== 6) {
+            if (text.slice(4).length !== 6) {
 
-                console.log("length error")
                 response = "SCBS :-) Password should be a 6 digit value"
                 closeOropenSession = 0
 
@@ -324,7 +425,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += "1. " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
+                        response += count + ". " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
 
                         //save available accounts
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -504,7 +605,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += "1. " + el["accountNo"] + "<br>E" + accountBalance + "<br>";
+                        response += count + ". " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
 
                         // save accounts that can be used to make a transfer
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -521,7 +622,7 @@ router.get('/', async (req, res) => {
 
 
 
-                    response += "<br>Enter Acc No.<br><br>";
+                    //response += "<br>Enter Acc No.<br><br>";
                     response += "00. Back<br>";
                     response += "0. Exit";
 
