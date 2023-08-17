@@ -164,7 +164,7 @@ router.get('/', async (req, res) => {
 
                     //reset loggin attempts to zero incase there was a failed login
                     customer.resetLoginAttempts(contact)
-                    response = " Menu :-)<br>1. My Accounts<br>2. MoMo <br>3. Utilities <br> 4. Prepaid   <br>5. Settings <br><br>0. Exit";
+                    response = " Menu :-)<br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
                     closeOropenSession = 1
 
                 } else {
