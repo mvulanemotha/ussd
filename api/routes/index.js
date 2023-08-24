@@ -410,13 +410,14 @@ router.get('/', async (req, res) => {
                     // display accounts to the customer
 
                     response = "Select Acc No :-)<br>";
-
+                    
                     let count = 0
                     let accountBalance = 0
                     let tempAccounts = []
 
                     await activeAccounts.forEach(el => {
 
+                        console.log(el)
 
                         if (el["accountBalance"] === undefined) {
                             accountBalance = 0
@@ -425,7 +426,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += count + ". " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
+                        response += count + ". "+ "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
 
                         //save available accounts
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -605,7 +606,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += count + ". " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
+                        response += count + ". "+ "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
 
                         // save accounts that can be used to make a transfer
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -773,11 +774,14 @@ router.get('/', async (req, res) => {
                     let tempAccounts = []
                     let count = 0
                     activeAccounts.forEach(el => {
+
+                        console.log(el)
+
                         count = count + 1
-                        response += count + ". " + el["accountNo"] + "<br>"
+                        response += count + ". "+ "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>"
 
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
-
+                    
                     });
 
                     // we need to store 
