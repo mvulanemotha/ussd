@@ -14,10 +14,9 @@ const time = require('../modal/datetime')
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = "SCBS :-) Network Error";
+    var response = "SCBS :-)<br><br>Wrong Input.";
 
     try {
-
 
         let phoneNumber = req.query.Msisdn
         let text = req.query.input
@@ -410,7 +409,7 @@ router.get('/', async (req, res) => {
                     // display accounts to the customer
 
                     response = "Select Acc No :-)<br>";
-                    
+
                     let count = 0
                     let accountBalance = 0
                     let tempAccounts = []
@@ -426,7 +425,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += count + ". "+ "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
+                        response += count + ". " + "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
 
                         //save available accounts
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -606,7 +605,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += count + ". "+ "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
+                        response += count + ". " + "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
 
                         // save accounts that can be used to make a transfer
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -778,10 +777,10 @@ router.get('/', async (req, res) => {
                         console.log(el)
 
                         count = count + 1
-                        response += count + ". "+ "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>"
+                        response += count + ". " + "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>"
 
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
-                    
+
                     });
 
                     // we need to store 
@@ -1089,7 +1088,7 @@ router.post("/sendmoneytomomo", async (req, res) => {
 })
 
 
-
+/*
 let countString = (str, letter) => {
     let count = 0;
 
@@ -1103,6 +1102,7 @@ let countString = (str, letter) => {
     }
     return count;
 }
+*/
 
 //check status of transfer
 
@@ -1117,8 +1117,6 @@ setInterval(async () => {
         console.log(time.myDate(newDate))*/
 
         //06 June 2023
-
-
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
 
@@ -1155,7 +1153,6 @@ setInterval(async () => {
                     //check 
                     if (status.data["status"] === "FAILED") {
 
-                        console.log(status.data["status"])
                         // update database when the transaction failed    
                         disbursment.updateTransferRequest(2, token, xxid)
 
@@ -1167,10 +1164,13 @@ setInterval(async () => {
                         //send sms to client
                         let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
                         sms.sendMessage(phone, message)
+                        //post sms charge
+                        sms.smsCharge(accountNo, time.myDate(newDate))
 
                         disbursment.updateTransferRequest(1, token, xxid)
 
-                        await disbursment.payMoMoCharge(accountNo, amount, time.myDate(newDate)).then(payMoMo => {
+                        //edit charge momo charge
+                        await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(amount), time.myDate(newDate)).then(payMoMo => {
 
                             console.log(payMoMo)
 
@@ -1197,10 +1197,6 @@ setInterval(async () => {
                         }).catch(err => {
                             console.log(err.message)
                         })
-
-                        // create a charge
-
-
                     }
                 }).catch(err => {
                     console.log(err.message)
@@ -1209,10 +1205,10 @@ setInterval(async () => {
         })
 
     } catch (error) {
-        //console.log(error)
+        console.log(error.message)
     }
 
-}, 5000);
+}, 8000);
 
 
 // function to check payment status
@@ -1245,7 +1241,7 @@ setInterval(async () => {
                 })
 
 
-                await collections.paymentStatus(xxid, token).then((dt) => {
+                await collections.paymentStatus(xxid, token).then(async(dt) => {
 
                     //CHECKING IF WE HAVE DATA
 
@@ -1259,12 +1255,12 @@ setInterval(async () => {
                     if (status === 'SUCCESSFUL') {
 
                         // 1 means transaction was succesfully
-                        collections.updatepaymentRequest(1, token, xxid)
+                       collections.updatepaymentRequest(1, token, xxid)
 
                         // make a deposit to mula account
-                        collections.makeDeposit(amount, '000004258', phone, time.myDate(newDate))
+                       await collections.makeDeposit(amount, '000004258', phone, time.myDate(newDate))
 
-                        collections.makeDeposit(amount, accountNo, phone, time.myDate(newDate)).then(data => {
+                       await collections.makeDeposit(amount, accountNo, phone, time.myDate(newDate)).then(data => {
 
                             // sms from status after a succesfully transaction
 
@@ -1272,7 +1268,7 @@ setInterval(async () => {
 
                             let message = 'SCBS :-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
                             sms.sendMessage(phone, message)
-
+                            sms.smsCharge(accountNo, time.myDate(newDate))
                         })
                     }
 
@@ -1289,7 +1285,7 @@ setInterval(async () => {
         console.log(err.message)
     }
 
-}, 20000)
+}, 8000)
 
 
 module.exports = router

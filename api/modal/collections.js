@@ -47,7 +47,7 @@ let requestToPay = async (uuid, payToken, amount, msisdn) => {
 let momoStatus = async (token, number) => {
 
     try {
-        console.log(number)
+   
         //collection header
 
         let header = {
@@ -130,7 +130,7 @@ let saveRequestTransaction = async (token, xxid, amount, phone, accountNo) => {
                 if (err) {
                     return reject(err)
                 }
-
+                
                 return resolve(result)
 
             })
@@ -240,8 +240,6 @@ let makeDeposit = async (amount, accountNo, phoneNumber, depositDate) => {
     }
 
 }
-
-
 
 
 module.exports = { momoStatus, makeDeposit, requestToPay, paymentStatus, checkBalance, saveRequestTransaction, getPaymentStatus, updatepaymentRequest }

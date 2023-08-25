@@ -238,4 +238,5 @@ let payMoMoCharge = async (clientAccount, amount, date) => {
     }
 }
 
-module.exports = { payMoMoCharge, disbursememtCharge, makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }
+
+module.exports = {payMoMoCharge, disbursememtCharge, makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }
