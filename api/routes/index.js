@@ -1163,16 +1163,40 @@ setInterval(async () => {
 
                         //send sms to client
                         let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
+
                         sms.sendMessage(phone, message)
                         //post sms charge
-                        sms.smsCharge(accountNo, time.myDate(newDate))
+                        await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
+
+                            // pay sms charge
+                            let data = paySms.data
+                            let resourceID = data["resourceId"]
+
+                            //pay sms charge
+                            await disbursment.payCharge(accountNo, resourceID, 0.95, time.myDate(newDate)).then(tt => {
+
+                                console.log("sms")
+                                console.log(tt)
+                            })
+                        })
 
                         disbursment.updateTransferRequest(1, token, xxid)
 
-                        //edit charge momo charge
-                        await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(amount), time.myDate(newDate)).then(payMoMo => {
+                        //create momo charge
+                        await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(amount).toFixed(2), time.myDate(newDate)).then(async payMoMo => {
 
                             console.log(payMoMo)
+
+                            let data = payMoMo.data
+
+                            var resourceID = data["resourceId"]
+
+                            // pay charge created
+                            await disbursment.payCharge(accountNo, resourceID, disbursment.disbursememtCharge(amount).toFixed(2), time.myDate(newDate)).then(tt => {
+
+                                console.log(tt)
+
+                            })
 
                         })
                         //withdraw from Musoni
@@ -1241,7 +1265,7 @@ setInterval(async () => {
                 })
 
 
-                await collections.paymentStatus(xxid, token).then(async(dt) => {
+                await collections.paymentStatus(xxid, token).then(async (dt) => {
 
                     //CHECKING IF WE HAVE DATA
 
@@ -1255,25 +1279,39 @@ setInterval(async () => {
                     if (status === 'SUCCESSFUL') {
 
                         // 1 means transaction was succesfully
-                       collections.updatepaymentRequest(1, token, xxid)
+                        collections.updatepaymentRequest(1, token, xxid)
 
                         // make a deposit to mula account
-                       await collections.makeDeposit(amount, '000004258', phone, time.myDate(newDate))
+                        await collections.makeDeposit(amount, '000004258', phone, time.myDate(newDate))
 
-                       await collections.makeDeposit(amount, accountNo, phone, time.myDate(newDate)).then(data => {
+                        await collections.makeDeposit(amount, accountNo, phone, time.myDate(newDate)).then(async data => {
 
                             // sms from status after a succesfully transaction
 
                             accountNo = accountNo.replace(/00000/, 'xxxxx')
 
                             let message = 'SCBS :-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
-                            sms.sendMessage(phone, message)
-                            sms.smsCharge(accountNo, time.myDate(newDate))
+
+                            await sms.sendMessage(phone, message)
+
+                            await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
+
+                                // pay sms charge
+                                let data = paySms.data
+                                let resourceID = data["resourceId"]
+
+                                //pay sms charge
+                                await disbursment.payCharge(accountNo, resourceID, 0.95, time.myDate(newDate)).then(tt => {
+
+                                    console.log(tt)
+
+                                })
+                            })
                         })
                     }
 
-
                 })
+
 
             } else {
                 //console.log("Nothing To get")
@@ -1286,6 +1324,5 @@ setInterval(async () => {
     }
 
 }, 8000)
-
 
 module.exports = router

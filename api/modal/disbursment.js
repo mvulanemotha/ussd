@@ -238,5 +238,40 @@ let payMoMoCharge = async (clientAccount, amount, date) => {
     }
 }
 
+let payCharge = async (accountNo, chargeid, amount, date) => {
 
-module.exports = {payMoMoCharge, disbursememtCharge, makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }
+    //list all the 
+
+    let data = {
+
+        "dateFormat": "dd MMMM yyyy",
+        "locale": "en",
+        "amount": amount,
+        "dueDate": date
+    }
+
+
+    try {
+
+        return await axios({
+
+            method: "post",
+            //url: process.env.url + 'savingsaccounts/'+ accountNo +'/transactions/'+chargeid,
+            url: process.env.url + 'savingsaccounts/' + accountNo + '/charges/' + chargeid + '?command=paycharge',
+            withCredentials: true,
+            crossdomain: true,
+            data: data,
+            headers: headersMusoni.headersMusoni()
+        
+        }).catch((error) => {
+            console.log(error)
+        })
+
+    } catch (error) {
+        console.log(error)
+    }
+
+}
+
+
+module.exports = { payMoMoCharge, payCharge, disbursememtCharge, makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }
