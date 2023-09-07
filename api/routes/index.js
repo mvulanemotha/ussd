@@ -425,7 +425,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += count + ". " + "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
+                        response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br> E" + accountBalance + "<br><br>"
 
                         //save available accounts
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -605,7 +605,7 @@ router.get('/', async (req, res) => {
                         }
 
                         count = count + 1
-                        response += count + ". " + "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
+                        response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>E" + accountBalance + "<br><br>";
 
                         // save accounts that can be used to make a transfer
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -777,7 +777,7 @@ router.get('/', async (req, res) => {
                         console.log(el)
 
                         count = count + 1
-                        response += count + ". " + "<span style = 'font-size:12px'> " + el["shortProductName"] + " </span> " + el["accountNo"] + "<br>"
+                        response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>"
 
                         tempAccounts.push({ "accountNo": el["accountNo"], row: count })
 
