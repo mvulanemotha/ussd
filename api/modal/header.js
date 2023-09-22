@@ -6,6 +6,7 @@ dotenv.config();
 let headersMusoni = () => {
   
   let apiKey = 'uUUnYBrEJ48mp2JoM8Jni7yIf8JDRP1N7mZvUTmO' 
+  //let apiKey = 'G1ApOPzYok3CnSupBeBMfRMXEFxHVMT5DaFc5854'
   let username = 'Status Capital API' 
   let password = 'Status12345'
   

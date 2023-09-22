@@ -50,7 +50,7 @@ let makeWithdrawal = async (amount, accountNo, phoneNumber, withdrawalDate) => {
 
     try {
 
-        let url = 'https://api.live.irl.musoniservices.com/v1/'
+        //let url = 'https://api.live.irl.musoniservices.com/v1/'
 
         let data = {
             "locale": "en",
@@ -66,7 +66,7 @@ let makeWithdrawal = async (amount, accountNo, phoneNumber, withdrawalDate) => {
         return await axios({
 
             method: "post",
-            url: url + "savingsaccounts/" + accountNo + "/transactions?command=withdrawal",
+            url: process.env.url + "savingsaccounts/" + accountNo + "/transactions?command=withdrawal",
             withCredentials: true,
             crossdomain: true,
             headers: headersMusoni.headersMusoni(),

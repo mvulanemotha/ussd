@@ -211,7 +211,7 @@ let makeDeposit = async (amount, accountNo, phoneNumber, depositDate) => {
 
     try {
 
-        let url = 'https://api.live.irl.musoniservices.com/v1/' //'https://api.demo.irl.musoniservices.com/v1/'
+        //let url = 'https://api.live.irl.musoniservices.com/v1/' //'https://api.demo.irl.musoniservices.com/v1/'
 
         let data = {
             "locale": "en",
@@ -227,7 +227,7 @@ let makeDeposit = async (amount, accountNo, phoneNumber, depositDate) => {
         return await axios({
 
             method: "post",
-            url: url + "savingsaccounts/" + accountNo + "/transactions?command=deposit",
+            url: process.env.url + "savingsaccounts/" + accountNo + "/transactions?command=deposit",
             withCredentials: true,
             crossdomain: true,
             headers: headersMusoni.headersMusoni(),

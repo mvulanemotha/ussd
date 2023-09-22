@@ -11,7 +11,7 @@ const database = mysql.createPool({
     dateStrings: true,
     pool: {
         acquire: 30000,
-        idle: 10000
+        idle: 30000
     }
 });
 
