@@ -66,7 +66,7 @@ let Send = (token, message, destination) => {
          if (response.data) {
             console.log(response.data);
             //res.json({ "message": "sent" });
-            
+
             clientsnumbers.updateSentsms(destination)
 
          }
@@ -83,32 +83,35 @@ let Send = (token, message, destination) => {
 //sms charge
 
 let smsCharge = async (clientAccount, date) => {
-    
-    try {
-        
-        var data = {
-            "chargeId": 13,
-            "locale": "en",
-            "amount": 0.95,
-            "dateFormat": "dd MMMM yyyy",
-            "dueDate": date
-        }
-        
-        return await axios({
-            method: "post",
-            url: process.env.url + 'savingsaccounts/' + clientAccount + '/charges',
-            withCredentials: true,
-            crossdomain: true,
-            data: data,
-            headers: headersMusoni.headersMusoni()
-        })
-    
-    } catch (error) {
-        console.log(error.message)
-    }
+   
+   console.log(date)
+   console.log(clientAccount)
+
+   try {
+
+      var data = {
+         "chargeId": 13,
+         "locale": "en",
+         "amount": 0.95,
+         "dateFormat": "dd MMMM yyyy",
+         "dueDate": date
+      }
+
+      return await axios({
+         method: "post",
+         url: process.env.url + 'savingsaccounts/' + clientAccount + '/charges',
+         withCredentials: true,
+         crossdomain: true,
+         data: data,
+         headers: headersMusoni.headersMusoni()
+      })
+
+   } catch (error) {
+      console.log(error.message)
+   }
 
 }
 
 
 
-module.exports = {smsCharge, sendMessage }
+module.exports = { smsCharge, sendMessage }

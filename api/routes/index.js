@@ -1168,9 +1168,9 @@ setInterval(async () => {
                         //send sms to client
                         //let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
                         //let meesage = ""
-                         let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
-                            
-                        
+                        let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
+
+
                         sms.sendMessage(phone, message)
                         //post sms charge
                         await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
@@ -1275,7 +1275,7 @@ setInterval(async () => {
 
                     //CHECKING IF WE HAVE DATA
 
-                    //console.log(dt.data)
+                    console.log(dt.data)
 
                     let status = dt.data["status"]
 
@@ -1297,26 +1297,26 @@ setInterval(async () => {
                             //console.log(data)
                             let resourceID = data["resourceId"]
                             // sms from status after a succesfully transaction
-
+                            let smsAccount = accountNo
                             accountNo = accountNo.replace(/00000/, 'xxxxx')
 
                             //let message = 'SCBS :-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
-                            
+
                             let message = "Your Acc xxx" + accountNo.slice(5) + " has been credited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
-                            
+
 
                             await sms.sendMessage(phone, message)
 
-                            await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
+                            await sms.smsCharge(smsAccount, time.myDate(newDate)).then(async paySms => {
 
                                 // pay sms charge
                                 let data = paySms.data
-                                
-                                
-                                //pay sms charge
-                                await disbursment.payCharge(accountNo, resourceID, 0.95, time.myDate(newDate)).then(tt => {
 
-                                    //console.log(tt)
+                                console.log(data)
+                                //pay sms charge
+                                await disbursment.payCharge(smsAccount, resourceID, 0.95, time.myDate(newDate)).then(tt => {
+
+                                    console.log(tt.data)
 
                                 })
                             })
