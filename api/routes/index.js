@@ -1090,21 +1090,6 @@ router.post("/sendmoneytomomo", async (req, res) => {
 })
 
 
-/*
-let countString = (str, letter) => {
-    let count = 0;
-
-    // looping through the items
-    for (let i = 0; i < str.length; i++) {
-
-        // check if the character is at that position
-        if (str.charAt(i) == letter) {
-            count += 1;
-        }
-    }
-    return count;
-}
-*/
 
 //check status of transfer
 
@@ -1145,11 +1130,7 @@ setInterval(async () => {
 
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
-
-                    //console.log(status)
-
-                    //console.log(status.data["status"])
-
+                    
                     if (status === undefined) {
                         return
                     }
@@ -1170,7 +1151,7 @@ setInterval(async () => {
                         //let meesage = ""
                         let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
 
-
+                        
                         sms.sendMessage(phone, message)
                         //post sms charge
                         await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
@@ -1198,7 +1179,7 @@ setInterval(async () => {
                             await disbursment.payCharge(accountNo, resourceID, disbursment.disbursememtCharge(amount).toFixed(2), time.myDate(newDate)).then(tt => {
 
                                 //console.log(tt)
-
+                            
                             })
                         })
                         //withdraw from Musoni
@@ -1245,6 +1226,8 @@ setInterval(async () => {
 
         let newDate = time.getTime().slice(0, 10)
 
+        console.log(newDate)
+
         await collections.getPaymentStatus().then(async (data) => {
 
 
@@ -1274,9 +1257,7 @@ setInterval(async () => {
                 await collections.paymentStatus(xxid, token).then(async (dt) => {
 
                     //CHECKING IF WE HAVE DATA
-
-                    console.log(dt.data)
-
+                    
                     let status = dt.data["status"]
 
                     if (status === 'FAILED') {
@@ -1287,34 +1268,28 @@ setInterval(async () => {
                     if (status === 'SUCCESSFUL') {
 
                         // 1 means transaction was succesfully
-                        collections.updatepaymentRequest(1, token, xxid)
+                        await collections.updatepaymentRequest(1, token, xxid)
 
                         // make a deposit to mula account
                         await collections.makeDeposit(amount, '000004258', phone, time.myDate(newDate))
 
                         await collections.makeDeposit(amount, accountNo, phone, time.myDate(newDate)).then(async data => {
 
-                            //console.log(data)
-                            let resourceID = data["resourceId"]
                             // sms from status after a succesfully transaction
                             let smsAccount = accountNo
                             accountNo = accountNo.replace(/00000/, 'xxxxx')
 
                             //let message = 'SCBS :-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
-
+                            
                             let message = "Your Acc xxx" + accountNo.slice(5) + " has been credited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
 
 
-                            await sms.sendMessage(phone, message)
+                            sms.sendMessage(phone, message)
 
                             await sms.smsCharge(smsAccount, time.myDate(newDate)).then(async paySms => {
-
-                                // pay sms charge
-                                let data = paySms.data
-
-                                console.log(data)
+                                
                                 //pay sms charge
-                                await disbursment.payCharge(smsAccount, resourceID, 0.95, time.myDate(newDate)).then(tt => {
+                                await disbursment.payCharge(smsAccount, paySms["data"]["resourceId"] , 0.95, time.myDate(newDate)).then(tt => {
 
                                     console.log(tt.data)
 
