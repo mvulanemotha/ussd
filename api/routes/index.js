@@ -1094,49 +1094,48 @@ router.post("/sendmoneytomomo", async (req, res) => {
 //check status of transfer
 
 setInterval(async () => {
-
-
+    
     try {
-
+        
         let newDate = time.getTime().slice(0, 10)
         
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
-
+            
             if (data.length > 0) {
-
+                
                 let xxid
                 let token
                 let accountNo
                 let amount
                 let phone
                 let No
-
+                
                 data.forEach(values => {
-
+                    
                     xxid = values["xxid"]
                     token = values["token"]
                     accountNo = values["accountNo"]
                     amount = values["amount"]
                     phone = values["phone"]
                     No = values["No"]
-
+                
                 })
-
-
+                
+                
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
                     
                     if (status === undefined) {
                         return
                     }
-
+                    
                     //check 
                     if (status.data["status"] === "FAILED") {
-
+                        
                         // update database when the transaction failed    
                         disbursment.updateTransferRequest(2, token, xxid)
-
+                    
                     }
 
                     //check if the trasaction was a successs
