@@ -875,8 +875,8 @@ router.get('/', async (req, res) => {
                         this.accountBalance = 0
                     }
 
-                    response = "My Account Info :-) <br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
-                    response += "Interest: E " + this.totalInterestPosted + "<br>"
+                    response = "My Account Info :-)<br>"//<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
+                    //response += "Interest: E " + this.totalInterestPosted + "<br>"
                     response += "Balance: E " + this.accountBalance + "<br><br>"
                     response += "00. Back<br>"
                     response += "0. Exit";
@@ -1099,11 +1099,7 @@ setInterval(async () => {
     try {
 
         let newDate = time.getTime().slice(0, 10)
-
-        /*console.log(newDate)
-        console.log(time.myDate(newDate))*/
-
-        //06 June 2023
+        
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
 
@@ -1225,13 +1221,9 @@ setInterval(async () => {
 
 
         let newDate = time.getTime().slice(0, 10)
-
-        console.log(newDate)
-
+        
         await collections.getPaymentStatus().then(async (data) => {
-
-
-
+            
             if (data.length > 0) {
                 //get payment status
 
