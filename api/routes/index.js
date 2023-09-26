@@ -475,6 +475,7 @@ router.get('/', async (req, res) => {
             let amount = text.slice(6)
             let accountNo
             let accountBalanceMusoni = 0
+            let productName = ""
 
             let row = text[4]  //getting a row
             let input = text.slice(0, 3)
@@ -485,18 +486,16 @@ router.get('/', async (req, res) => {
             await account.getSelectedAccount(input, sessionId, row).then(dt => {
 
                 dt.forEach(el => {
-
                     accountNo = el["accountNo"]
-
                 })
-
             })
-
-
-
+            
+            
             await account.getAccountSavingsAccountBalance(accountNo).then(el => {
 
                 accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
+                productName = el["data"]["savingsProductName"]
+
 
             }).catch(err => {
 
@@ -504,7 +503,16 @@ router.get('/', async (req, res) => {
 
             })
 
-            if (accountBalanceMusoni < amount) {
+            // check if account has enough amount to perform task
+        
+            // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
+
+            // accountBalanceMusoni < amount
+
+            let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
+
+            if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
+
                 response = "SCBS :-) You have insuffient funds."
                 closeOropenSession = 0;
 
@@ -544,7 +552,7 @@ router.get('/', async (req, res) => {
 
                     })
                 })
-            } // end of transfer functions
+            } // end of transfer functions */
 
 
         }
@@ -935,14 +943,9 @@ router.post('/', async (req, res) => {
             res.json({ message: "failed" })
 
         }
-
-
     })
-
-    //ussdName ussdNumber ussdCFI
-
+    
 })
-
 
 //from client app check if number of client match the one in Musoni
 //status
@@ -1094,48 +1097,48 @@ router.post("/sendmoneytomomo", async (req, res) => {
 //check status of transfer
 
 setInterval(async () => {
-    
+
     try {
-        
+
         let newDate = time.getTime().slice(0, 10)
-        
+
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
-            
+
             if (data.length > 0) {
-                
+
                 let xxid
                 let token
                 let accountNo
                 let amount
                 let phone
                 let No
-                
+
                 data.forEach(values => {
-                    
+
                     xxid = values["xxid"]
                     token = values["token"]
                     accountNo = values["accountNo"]
                     amount = values["amount"]
                     phone = values["phone"]
                     No = values["No"]
-                
+
                 })
-                
-                
+
+
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
-                    
+
                     if (status === undefined) {
                         return
                     }
-                    
+
                     //check 
                     if (status.data["status"] === "FAILED") {
-                        
+
                         // update database when the transaction failed    
                         disbursment.updateTransferRequest(2, token, xxid)
-                    
+
                     }
 
                     //check if the trasaction was a successs
@@ -1146,7 +1149,7 @@ setInterval(async () => {
                         //let meesage = ""
                         let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
 
-                        
+
                         sms.sendMessage(phone, message)
                         //post sms charge
                         await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
@@ -1164,17 +1167,17 @@ setInterval(async () => {
                         disbursment.updateTransferRequest(1, token, xxid)
 
                         //create momo charge
-                        await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(amount).toFixed(2), time.myDate(newDate)).then(async payMoMo => {
+                        await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(parseFloat(amount).toFixed(2)), time.myDate(newDate)).then(async payMoMo => {
 
                             let data = payMoMo.data
 
                             var resourceID = data["resourceId"]
 
                             // pay charge created
-                            await disbursment.payCharge(accountNo, resourceID, disbursment.disbursememtCharge(amount).toFixed(2), time.myDate(newDate)).then(tt => {
+                            await disbursment.payCharge(accountNo, resourceID, disbursment.disbursememtCharge(parseFloat(amount)).toFixed(2), time.myDate(newDate)).then(tt => {
 
                                 //console.log(tt)
-                            
+
                             })
                         })
                         //withdraw from Musoni
@@ -1220,9 +1223,9 @@ setInterval(async () => {
 
 
         let newDate = time.getTime().slice(0, 10)
-        
+
         await collections.getPaymentStatus().then(async (data) => {
-            
+
             if (data.length > 0) {
                 //get payment status
 
@@ -1248,7 +1251,7 @@ setInterval(async () => {
                 await collections.paymentStatus(xxid, token).then(async (dt) => {
 
                     //CHECKING IF WE HAVE DATA
-                    
+
                     let status = dt.data["status"]
 
                     if (status === 'FAILED') {
@@ -1271,16 +1274,16 @@ setInterval(async () => {
                             accountNo = accountNo.replace(/00000/, 'xxxxx')
 
                             //let message = 'SCBS :-) A Credit of E' + amount + ' has been made to Acc ' + accountNo + ' on ' + time.getTime() + ''
-                            
+
                             let message = "Your Acc xxx" + accountNo.slice(5) + " has been credited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
 
 
                             sms.sendMessage(phone, message)
 
                             await sms.smsCharge(smsAccount, time.myDate(newDate)).then(async paySms => {
-                                
+
                                 //pay sms charge
-                                await disbursment.payCharge(smsAccount, paySms["data"]["resourceId"] , 0.95, time.myDate(newDate)).then(tt => {
+                                await disbursment.payCharge(smsAccount, paySms["data"]["resourceId"], 0.95, time.myDate(newDate)).then(tt => {
 
                                     console.log(tt.data)
 

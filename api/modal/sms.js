@@ -84,9 +84,6 @@ let Send = (token, message, destination) => {
 
 let smsCharge = async (clientAccount, date) => {
    
-   console.log(date)
-   console.log(clientAccount)
-
    try {
 
       var data = {

@@ -12,7 +12,7 @@ let clientsProducts = async (accountNo) => {
 
 
     return await axios({
-        
+
         method: "get",
         url: process.env.url + "clients/" + accountNo + "/accounts",
         withCredentials: true,
@@ -103,14 +103,14 @@ let storeSelectedAccount = async (sessionId, accountNo, input, row) => {
             let query = "insert into selectedAccounts (sessionId , accountNo , input , selectedRow) select ?,?,?,? "
                 + " where not exists ( select sessionId , accountNo , input , selectedRow from selectedAccounts "
                 + " where sessionId = ? and accountNo = ? and input = ? and selectedRow = ?)"
-            
+
             db.query(query, [sessionId, accountNo, input, row, sessionId, accountNo, input, row], (err, result) => {
 
                 if (err) {
                     return reject(err)
                 }
                 return resolve(result)
-            
+
             })
 
         })

@@ -198,19 +198,90 @@ let disbursememtCharge = (amount) => {
 
     try {
 
-        let charged = Number(amount) * (1.2 / 100)
+        if (amount > 4000) {
+            return ((1.2 / 100) * amount)
+        }
 
-        if (charged < 30.00) {
-            return charged = 30.00
-        } else {
-            return charged
+        if (amount <= 250) {
+            return 10
+        }
+
+        if ((amount > 250) && (amount < 500)) {
+            return 15
+        }
+
+        if ((amount > 500) && (amount < 750)) {
+            return 17
+        }
+
+        if ((amount > 750) && (amount < 1200)) {
+            return 22
+        }
+
+        if ((amount > 1200) && (amount < 2200)) {
+            return 32
+        }
+
+        if ((amount > 2200) && (amount < 4000)) {
+            return 48
         }
 
     } catch (error) {
         console.log(error.message)
     }
-
 }
+
+
+// check if minimum amount is left on the account
+let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
+
+    let availableBalance = 0.0
+    
+    if (productName === "Bronze Savings") {
+
+        availableBalance = accountBalance - withdrawnAmount
+        console.log(availableBalance)
+        if (availableBalance >= 300) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    if (productName === "Silver Savings") {
+
+        availableBalance = accountBalance - withdrawnAmount
+
+        if (availableBalance >= 500) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    if (productName === "Golden savings") {
+
+        availableBalance = accountBalance - withdrawnAmount
+
+        if (availableBalance >= 1000) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    if (productName === "Mula Account") {
+
+        availableBalance = accountBalance - withdrawnAmount
+
+        if (availableBalance >= 50) {
+            return true
+        } else {
+            return false
+        }
+    }
+}
+
 
 let payMoMoCharge = async (clientAccount, amount, date) => {
 
@@ -262,7 +333,7 @@ let payCharge = async (accountNo, chargeid, amount, date) => {
             crossdomain: true,
             data: data,
             headers: headersMusoni.headersMusoni()
-        
+
         }).catch((error) => {
             console.log(error)
         })
@@ -274,4 +345,4 @@ let payCharge = async (accountNo, chargeid, amount, date) => {
 }
 
 
-module.exports = { payMoMoCharge, payCharge, disbursememtCharge, makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }
+module.exports = { canWithDraw, payMoMoCharge, payCharge, disbursememtCharge, makeWithdrawal, requestToTransfer, saveDisbursmentRequest, updateTransferRequest, getTransferStatus, transferStatus }
