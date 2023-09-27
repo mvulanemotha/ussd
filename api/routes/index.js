@@ -489,22 +489,26 @@ router.get('/', async (req, res) => {
                     accountNo = el["accountNo"]
                 })
             })
-            
-            
+
+
             await account.getAccountSavingsAccountBalance(accountNo).then(el => {
+
+
+                console.log(el)
 
                 accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
                 productName = el["data"]["savingsProductName"]
 
 
+
             }).catch(err => {
 
-                console.log(err)
+                console.log(err.message)
 
             })
 
             // check if account has enough amount to perform task
-        
+
             // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
 
             // accountBalanceMusoni < amount
@@ -514,7 +518,11 @@ router.get('/', async (req, res) => {
             if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
                 response = "SCBS :-) You have insuffient funds."
-                closeOropenSession = 0;
+
+                response += "<br><br>00. Back<br>";
+                response += "0. Exit";
+
+                closeOropenSession = 1;
 
             } else {
 
@@ -529,6 +537,8 @@ router.get('/', async (req, res) => {
                     uuID = uuid.v4();
 
                     await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
+
+                        console.log(payRes)
 
                         //check status
                         if (payRes["status"] === 202) {
@@ -944,7 +954,7 @@ router.post('/', async (req, res) => {
 
         }
     })
-    
+
 })
 
 //from client app check if number of client match the one in Musoni
