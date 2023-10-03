@@ -451,9 +451,8 @@ router.get('/', async (req, res) => {
             })
 
         }
-
+        
         // Enter amount to send to disbursememt
-        console.log(text.length)
 
         if ((text.indexOf('2*1*') !== -1) && (text.length === 5)) {
 
@@ -479,9 +478,8 @@ router.get('/', async (req, res) => {
 
             let row = text[4]  //getting a row
             let input = text.slice(0, 3)
+
             //get saved inputes to retrieve account to send to
-
-
 
             await account.getSelectedAccount(input, sessionId, row).then(dt => {
 
@@ -492,15 +490,10 @@ router.get('/', async (req, res) => {
 
 
             await account.getAccountSavingsAccountBalance(accountNo).then(el => {
-
-
-                console.log(el)
-
+                
                 accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
                 productName = el["data"]["savingsProductName"]
-
-
-
+            
             }).catch(err => {
 
                 console.log(err.message)
