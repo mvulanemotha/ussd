@@ -451,7 +451,7 @@ router.get('/', async (req, res) => {
             })
 
         }
-        
+
         // Enter amount to send to disbursememt
 
         if ((text.indexOf('2*1*') !== -1) && (text.length === 5)) {
@@ -490,10 +490,10 @@ router.get('/', async (req, res) => {
 
 
             await account.getAccountSavingsAccountBalance(accountNo).then(el => {
-                
+
                 accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
                 productName = el["data"]["savingsProductName"]
-            
+
             }).catch(err => {
 
                 console.log(err.message)
@@ -1153,6 +1153,29 @@ setInterval(async () => {
                         let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
 
 
+                        //withdraw from Musoni
+                        await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
+
+                            //console.log(wdata)
+                            if (wdata.data !== undefined) {
+                                //console.log(wdata.data)
+                            }
+
+                        }).catch(err => {
+                            console.log(err.message)
+                        })
+
+                        // withdraw from the 000004257
+                        await disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(wdata => {
+
+                            if (wdata.data !== undefined) {
+                                //console.log(wdata.data)
+                            }
+
+                        }).catch(err => {
+                            console.log(err.message)
+                        })
+
                         sms.sendMessage(phone, message)
                         //post sms charge
                         await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
@@ -1183,28 +1206,7 @@ setInterval(async () => {
 
                             })
                         })
-                        //withdraw from Musoni
-                        await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
 
-                            //console.log(wdata)
-                            if (wdata.data !== undefined) {
-                                //console.log(wdata.data)
-                            }
-
-                        }).catch(err => {
-                            console.log(err.message)
-                        })
-
-                        // withdraw from the 000004257
-                        await disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(wdata => {
-
-                            if (wdata.data !== undefined) {
-                                //console.log(wdata.data)
-                            }
-
-                        }).catch(err => {
-                            console.log(err.message)
-                        })
                     }
                 }).catch(err => {
                     console.log(err.message)
