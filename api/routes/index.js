@@ -1081,15 +1081,12 @@ router.post("/sendmoneytomomo", async (req, res) => {
                 res.json({ "message": "transfred" })
 
             } else {
-
                 res.json({ "message": "failed" })
             }
 
 
         }).catch((err) => {
-
             console.log(err.message)
-
         })
     })
 
@@ -1147,66 +1144,68 @@ setInterval(async () => {
                     //check if the trasaction was a successs
                     if (status.data["status"] === "SUCCESSFUL") {
 
-                        //send sms to client
-                        //let message = 'SCBS :-) A Deposit of SZL' + amount + ' has been made to your momo account on ' + time.getTime() + ''
-                        //let meesage = ""
-                        let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
+                        //update database to show that request was succesfully
+                        disbursment.updateTransferRequest(1, token, xxid)
 
+                        //send sms to client
+
+                        let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
+                        
 
                         //withdraw from Musoni
-                        await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(wdata => {
+                        await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(async wdata => {
 
                             //console.log(wdata)
                             if (wdata.data !== undefined) {
                                 //console.log(wdata.data)
+
+                                // withdraw from the 000004257
+                                await disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(indata => {
+
+                                    if (indata.data !== undefined) {
+                                        //console.log(wdata.data)
+                                    }
+
+                                }).catch(err => {
+                                    console.log(err.message)
+                                })
+
+
+                                sms.sendMessage(phone, message)
+                                //post sms charge
+                                await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
+
+                                    // pay sms charge
+                                    let data = paySms.data
+                                    let resourceID = data["resourceId"]
+
+                                    //pay sms charge
+                                    await disbursment.payCharge(accountNo, resourceID, 0.95, time.myDate(newDate)).then(tt => {
+                                        //console.log(tt)
+                                    })
+                                })
                             }
 
+
+                            //create momo charge
+                            await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(parseFloat(amount).toFixed(2)), time.myDate(newDate)).then(async payMoMo => {
+
+                                let data = payMoMo.data
+
+                                var resourceID = data["resourceId"]
+
+                                // pay charge created
+                                await disbursment.payCharge(accountNo, resourceID, disbursment.disbursememtCharge(parseFloat(amount)).toFixed(2), time.myDate(newDate)).then(tt => {
+
+                                    //console.log(tt)
+
+                                })
+                            })
+
+                        
                         }).catch(err => {
                             console.log(err.message)
                         })
-
-                        // withdraw from the 000004257
-                        await disbursment.makeWithdrawal(amount, "000004257", phone, time.myDate(newDate)).then(wdata => {
-
-                            if (wdata.data !== undefined) {
-                                //console.log(wdata.data)
-                            }
-
-                        }).catch(err => {
-                            console.log(err.message)
-                        })
-
-                        sms.sendMessage(phone, message)
-                        //post sms charge
-                        await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
-
-                            // pay sms charge
-                            let data = paySms.data
-                            let resourceID = data["resourceId"]
-
-                            //pay sms charge
-                            await disbursment.payCharge(accountNo, resourceID, 0.95, time.myDate(newDate)).then(tt => {
-                                //console.log(tt)
-                            })
-                        })
-
-                        disbursment.updateTransferRequest(1, token, xxid)
-
-                        //create momo charge
-                        await disbursment.payMoMoCharge(accountNo, disbursment.disbursememtCharge(parseFloat(amount).toFixed(2)), time.myDate(newDate)).then(async payMoMo => {
-
-                            let data = payMoMo.data
-
-                            var resourceID = data["resourceId"]
-
-                            // pay charge created
-                            await disbursment.payCharge(accountNo, resourceID, disbursment.disbursememtCharge(parseFloat(amount)).toFixed(2), time.myDate(newDate)).then(tt => {
-
-                                //console.log(tt)
-
-                            })
-                        })
-
                     }
                 }).catch(err => {
                     console.log(err.message)
@@ -1218,7 +1217,7 @@ setInterval(async () => {
         console.log(error.message)
     }
 
-}, 5000);
+}, 4000);
 
 
 // function to check payment status
