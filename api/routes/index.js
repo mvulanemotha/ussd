@@ -484,7 +484,7 @@ router.get('/', async (req, res) => {
             await account.getSelectedAccount(input, sessionId, row).then(dt => {
 
                 dt.forEach(el => {
-                    accountNo = el["accountNo"]
+                    accountNo = el["accountNo"]``
                 })
             })
 
@@ -510,12 +510,9 @@ router.get('/', async (req, res) => {
 
             if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
-                response = "SCBS :-) You have insuffient funds."
+                response = "SCBS :-)<br><br>You have insuffient funds."
 
-                response += "<br><br>00. Back<br>";
-                response += "0. Exit";
-
-                closeOropenSession = 1;
+                closeOropenSession = 0;
 
             } else {
 
@@ -530,9 +527,7 @@ router.get('/', async (req, res) => {
                     uuID = uuid.v4();
 
                     await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
-
-                        console.log(payRes)
-
+                        
                         //check status
                         if (payRes["status"] === 202) {
 
@@ -547,7 +542,6 @@ router.get('/', async (req, res) => {
                             response = "Failed To Make Transfer."
                             closeOropenSession = 0
                         }
-
 
                     }).catch((err) => {
 
@@ -1128,7 +1122,7 @@ setInterval(async () => {
 
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
-
+                    
                     if (status === undefined) {
                         return
                     }
@@ -1150,7 +1144,7 @@ setInterval(async () => {
                         //send sms to client
 
                         let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
-                        
+
 
                         //withdraw from Musoni
                         await disbursment.makeWithdrawal(amount, accountNo, phone, time.myDate(newDate)).then(async wdata => {
@@ -1201,7 +1195,6 @@ setInterval(async () => {
 
                                 })
                             })
-
                         
                         }).catch(err => {
                             console.log(err.message)
@@ -1222,7 +1215,7 @@ setInterval(async () => {
 
 // function to check payment status
 setInterval(async () => {
-
+    
     try {
 
 
