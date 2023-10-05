@@ -483,8 +483,10 @@ router.get('/', async (req, res) => {
 
             await account.getSelectedAccount(input, sessionId, row).then(dt => {
 
+                console.log(dt)
+
                 dt.forEach(el => {
-                    accountNo = el["accountNo"]``
+                    accountNo = el["accountNo"]
                 })
             })
 
@@ -510,7 +512,7 @@ router.get('/', async (req, res) => {
 
             if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
-                response = "SCBS :-)<br><br>You have insuffient funds."
+                response = "SCBS :-)<br><br>You have insufficient funds."
 
                 closeOropenSession = 0;
 
@@ -527,7 +529,7 @@ router.get('/', async (req, res) => {
                     uuID = uuid.v4();
 
                     await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
-                        
+
                         //check status
                         if (payRes["status"] === 202) {
 
@@ -1122,7 +1124,7 @@ setInterval(async () => {
 
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
-                    
+
                     if (status === undefined) {
                         return
                     }
@@ -1195,7 +1197,7 @@ setInterval(async () => {
 
                                 })
                             })
-                        
+
                         }).catch(err => {
                             console.log(err.message)
                         })
@@ -1215,7 +1217,7 @@ setInterval(async () => {
 
 // function to check payment status
 setInterval(async () => {
-    
+
     try {
 
 
