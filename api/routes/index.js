@@ -461,10 +461,7 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1;
 
         }
-
-        console.log(text.slice(6))
-        console.log(text.length)
-        console.log(text)
+        
 
         // Enter amount to send to disbursememt
 
@@ -485,7 +482,7 @@ router.get('/', async (req, res) => {
             response = "Enter MoMo Account -:- <br><br>"
             response += "00. Back<br>";
             response += "0. Exit";
-            closeOropenSession = 0;
+            closeOropenSession = 1;
 
         }
 
@@ -516,11 +513,11 @@ router.get('/', async (req, res) => {
 
                 response += "<br>00. Back<br>";
                 response += "0. Exit";
-                closeOropenSession = 0;
+                closeOropenSession = 1;
 
 
             }
-
+        
         }
 
         // sending money to a third party user
@@ -530,7 +527,7 @@ router.get('/', async (req, res) => {
 
             response += "<br><br>00. Back<br>";
             response += "0. Exit";
-            closeOropenSession = 0
+            closeOropenSession = 1
 
         }
 
@@ -894,7 +891,6 @@ router.get('/', async (req, res) => {
                             response = "SCBS -:- Failed to make transfer. Please check if you have enough money."
                             closeOropenSession = 0
                         }
-
                     }
 
 
@@ -931,9 +927,7 @@ router.get('/', async (req, res) => {
                 //get account numbers
 
                 await account.clientsProducts(clientNumber).then(resAccounts => {
-
-                    console.log(resAccounts.data)
-
+                    
                     activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
 
                         if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
@@ -1062,9 +1056,7 @@ router.get('/', async (req, res) => {
                 }
 
                 if (isLoan === 0) {
-
-                    console.log(accountFound + "We are in")
-
+                    
                     await account.accountDetails(accountFound).then(data => {
 
                         //totalWithdrawals = data.data.summary.totalWithdrawals
