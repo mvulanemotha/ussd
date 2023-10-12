@@ -544,7 +544,7 @@ router.get('/', async (req, res) => {
             let amount = text.slice(19)
 
             let thirdPartyContact = "268" + text.slice(8, 16)
-            
+
             let accountNo
             let accountBalanceMusoni = 0
             let productName = ""
@@ -605,7 +605,9 @@ router.get('/', async (req, res) => {
                         if (payRes["status"] === 202) {
 
                             //save request to pay details
-                            disbursment.saveDisbursmentRequest(token, uuID, amount, thirdPartyContact, accountNo)
+                            disbursment.saveDisbursmentRequest(token, uuID, amount, thirdPartyContact, accountNo, phoneNumber)
+                            // phoneNumber is a contact 
+
 
                             response = "Transfer Has Been Made."
                             closeOropenSession = 0
@@ -698,7 +700,7 @@ router.get('/', async (req, res) => {
                         if (payRes["status"] === 202) {
 
                             //save request to pay details
-                            disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo)
+                            disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo, "12345678")
 
                             response = "Transfer Has Been Made."
                             closeOropenSession = 0
@@ -1296,10 +1298,10 @@ router.post("/sendmoneytomomo", async (req, res) => {
             if (payRes["status"] === 202) {
 
                 //save request to pay details
-                disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo)
-
+                disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo , "12345678")
+                
                 res.json({ "message": "transfred" })
-
+            
             } else {
                 res.json({ "message": "failed" })
             }
@@ -1326,6 +1328,7 @@ setInterval(async () => {
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
 
+
             if (data.length > 0) {
 
                 let xxid
@@ -1334,6 +1337,7 @@ setInterval(async () => {
                 let amount
                 let phone
                 let No
+                let thirdpartyNumber
 
                 data.forEach(values => {
 
@@ -1343,12 +1347,15 @@ setInterval(async () => {
                     amount = values["amount"]
                     phone = values["phone"]
                     No = values["No"]
+                    thirdpartyNumber = values["thirdpartyNumber"]
 
                 })
 
 
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
+
+                    console.log(status)
 
                     if (status === undefined) {
                         return
@@ -1361,7 +1368,7 @@ setInterval(async () => {
                         disbursment.updateTransferRequest(2, token, xxid)
 
                     }
-
+                    
                     //check if the trasaction was a successs
                     if (status.data["status"] === "SUCCESSFUL") {
 
@@ -1370,7 +1377,18 @@ setInterval(async () => {
 
                         //send sms to client
 
-                        let message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
+                        let message
+                        let thirdpartyMessage
+
+                        if (thirdpartyNumber !== "12345678") {
+
+                            thirdpartyMessage = "You have received SZL" + amount + " MTN MoMo from " + thirdpartyNumber + " at " + time.getTime() + ". Ref: SCBS" + No + " Contact Center: 24171975"
+                            //You have received SZL480.00-MTN MoMo from 7612 9356 Transaction ID: SCBS 2334556 on 10/10/23 12:34:28 helpline 2417 1975
+                            message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
+                        } else {
+                            message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
+                        }
+
 
 
                         //withdraw from Musoni
@@ -1392,7 +1410,19 @@ setInterval(async () => {
                                 })
 
 
-                                sms.sendMessage(phone, message)
+                                // sending sms to third party customer
+                                if (thirdpartyNumber !== "12345678") {
+
+                                    sms.sendMessage(phone, thirdpartyMessage)   //phone is for third party since we saved as the contact it was directed to
+                                    sms.sendMessage(thirdpartyNumber, message)
+
+                                } else {
+
+                                    sms.sendMessage(phone, message)
+
+                                }
+
+
                                 //post sms charge
                                 await sms.smsCharge(accountNo, time.myDate(newDate)).then(async paySms => {
 
@@ -1430,14 +1460,14 @@ setInterval(async () => {
                 }).catch(err => {
                     console.log(err.message)
                 })
-            }
+            }  //testing what we get from the database
         })
 
     } catch (error) {
         console.log(error.message)
     }
 
-}, 4000);
+}, 5000);
 
 
 // function to check payment status

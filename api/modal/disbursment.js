@@ -82,15 +82,15 @@ let makeWithdrawal = async (amount, accountNo, phoneNumber, withdrawalDate) => {
 
 // store a disbursement request
 
-let saveDisbursmentRequest = async (token, xxid, amount, phone, accountNo) => {
+let saveDisbursmentRequest = async (token, xxid, amount, phone, accountNo, thirdpartyNumber) => {
 
     try {
 
         return await new Promise((resolve, reject) => {
 
-            let query = "insert into disbursmentrequest(token , xxid , amount, phone , accountNo) select ?,?,?,?,? where not exists (select xxid from disbursmentrequest where xxid = ? limit 1) "
+            let query = "insert into disbursmentrequest(token , xxid , amount, phone , accountNo , thirdpartyNumber ) select ?,?,?,?,?,? where not exists (select xxid from disbursmentrequest where xxid = ? limit 1) "
 
-            db.query(query, [token, xxid, amount, phone, accountNo, xxid], (err, result) => {
+            db.query(query, [token, xxid, amount, phone, accountNo, xxid, thirdpartyNumber], (err, result) => {
 
                 if (err) {
                     return reject(err)
@@ -195,7 +195,7 @@ let transferStatus = async (xreference, token) => {
 
 // calculate charge
 let disbursememtCharge = (amount) => {
-    
+
     try {
 
         if (amount > 4000) {
@@ -236,7 +236,7 @@ let disbursememtCharge = (amount) => {
 let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
 
     let availableBalance = 0.0
-    
+
     if (productName === "Bronze Savings") {
 
         availableBalance = accountBalance - withdrawnAmount
