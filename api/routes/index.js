@@ -1355,8 +1355,6 @@ setInterval(async () => {
                 //let status = dt.data["status"]
                 await disbursment.transferStatus(xxid, token).then(async status => {
 
-                    console.log(status)
-
                     if (status === undefined) {
                         return
                     }
@@ -1368,7 +1366,7 @@ setInterval(async () => {
                         disbursment.updateTransferRequest(2, token, xxid)
 
                     }
-                    
+
                     //check if the trasaction was a successs
                     if (status.data["status"] === "SUCCESSFUL") {
 
