@@ -49,7 +49,7 @@ let momoStatus = async (token, number) => {
     try {
    
         //collection header
-
+        
         let header = {
             'Ocp-Apim-Subscription-Key': 'b38eedce669f43808c7e5ac7e33b249e', //process.env.SubscriptionKey, //process.env.collections_secondary_key,
             'Authorization': 'Bearer ' + token,

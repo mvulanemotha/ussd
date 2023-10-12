@@ -50,7 +50,7 @@ let getClientAccount = async (username) => {
 
         return await new Promise((resolve, reject) => {
 
-            let query = "select account from customers where username = ? limit 1"
+            let query = "select * from customers where username = ? limit 1"
 
             db.query(query, [username], (err, result) => {
 
@@ -94,17 +94,17 @@ let accountDetails = async (accountNo) => {
 
 //store selected account from multiple accounts
 
-let storeSelectedAccount = async (sessionId, accountNo, input, row) => {
+let storeSelectedAccount = async (sessionId, accountNo, input, row, isloan = 0) => {
 
     try {
 
         return await new Promise((resolve, reject) => {
 
-            let query = "insert into selectedAccounts (sessionId , accountNo , input , selectedRow) select ?,?,?,? "
+            let query = "insert into selectedAccounts (sessionId , accountNo , input , selectedRow , isLoan) select ?,?,?,?,? "
                 + " where not exists ( select sessionId , accountNo , input , selectedRow from selectedAccounts "
                 + " where sessionId = ? and accountNo = ? and input = ? and selectedRow = ?)"
 
-            db.query(query, [sessionId, accountNo, input, row, sessionId, accountNo, input, row], (err, result) => {
+            db.query(query, [sessionId, accountNo, input, row, isloan, sessionId, accountNo, input, row], (err, result) => {
 
                 if (err) {
                     return reject(err)
