@@ -515,7 +515,7 @@ router.get('/', async (req, res) => {
                 response += "0. Exit";
                 closeOropenSession = 1;
 
-
+            
             }
         
         }

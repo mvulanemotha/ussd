@@ -90,7 +90,7 @@ let saveDisbursmentRequest = async (token, xxid, amount, phone, accountNo, third
 
             let query = "insert into disbursmentrequest(token , xxid , amount, phone , accountNo , thirdpartyNumber ) select ?,?,?,?,?,? where not exists (select xxid from disbursmentrequest where xxid = ? limit 1) "
 
-            db.query(query, [token, xxid, amount, phone, accountNo, xxid, thirdpartyNumber], (err, result) => {
+            db.query(query, [token, xxid, amount, phone, thirdpartyNumber, accountNo, xxid], (err, result) => {
 
                 if (err) {
                     return reject(err)
