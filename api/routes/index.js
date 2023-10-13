@@ -15,7 +15,7 @@ const time = require('../modal/datetime')
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = "SCBS :-)<br><br>Please veryify if<br>you have inputed correct details.";
+    var response = "SCBS :-)<br><br>Please confirm if<br>you have inputed correct details.";
 
     try {
 
@@ -461,7 +461,7 @@ router.get('/', async (req, res) => {
             closeOropenSession = 1;
 
         }
-        
+
 
         // Enter amount to send to disbursememt
 
@@ -476,7 +476,9 @@ router.get('/', async (req, res) => {
 
         }
 
-        if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) === "2")) {
+        console.log(text.slice(0, 3))
+
+        if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) === "2") && (text.slice(0, 3) !== "2*2")) {
 
 
             response = "Enter MoMo Account -:- <br><br>"
@@ -486,24 +488,32 @@ router.get('/', async (req, res) => {
 
         }
 
-
+        console.log(text)
         // Prompt Enter amount to transfer
         if ((text.length === 16) && (text.indexOf('2*1*') !== -1)) {
 
             let transferContact = text.slice(8, 16)
+            let numberStatus
+            //check if number is registred with mtn
+            await token.token().then(async (data) => {
 
-            //check number for number of characters if they are 8 digits
+                let token = data.data
 
-            if (transferContact.length < 8) {
+                //get a token then use it to make request
+                await collections.momoStatus(token["access_token"], "268" + transferContact).then(status => {
 
-                response = "Please double check the contact."
+                    numberStatus = status.data["result"]
 
-                response += "<br>00. Back<br>";
-                response += "0. Exit";
+                }).catch(err => {
+                    console.log(err.message)
+                })
 
-                closeOropenSession = 1;
+            }).catch((err) => {
+                console.log(err.message)
+            })
 
-            } else {
+            if (numberStatus === true) {
+
 
                 response = "Confirm MoMo Account<br>"
                 response += transferContact
@@ -515,9 +525,19 @@ router.get('/', async (req, res) => {
                 response += "0. Exit";
                 closeOropenSession = 1;
 
-            
+            } else {
+
+                response = "Number has no Mtn MoMo"
+                response += "<br><br>00. Back<br>";
+                response += "0. Exit";
+                closeOropenSession = 1;
+
             }
-        
+
+
+
+
+
         }
 
         // sending money to a third party user
@@ -533,6 +553,7 @@ router.get('/', async (req, res) => {
 
 
         // Send momo to another number
+        console.log(text.length)
 
         if ((text.indexOf('2*1*') !== -1) && (text.length >= 20)) {
 
@@ -625,10 +646,9 @@ router.get('/', async (req, res) => {
 
         }
 
-
         //after amount was entered  // disbursement panel
 
-        if ((text.indexOf('2*1*') !== -1) && (text.length > 9) && (text.indexOf("2*2") === -1) && (text.slice(6) !== "1") && (text.length < 16)) {
+        if ((text.indexOf('2*1*') !== -1) && (text.length > 9) && (text.indexOf("2*2") === -1) && (text.slice(6) !== "1") && (text.length < 16) && (text.slice(5, 7) !== "*2")) {
 
 
             closeOropenSession = 0
@@ -675,7 +695,7 @@ router.get('/', async (req, res) => {
 
             if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
-                response = "SCBS :-)<br><br>You have insufficient funds."
+                response = "SCBS -:-<br><br>You have insufficient funds."
 
                 closeOropenSession = 0;
 
@@ -817,9 +837,11 @@ router.get('/', async (req, res) => {
 
         }
 
+        //
+        console.log(text.slice(0, 4))
 
         //transfer amount entered to make the transfer
-        if ((text.indexOf('2*2*') !== -1) && (text.length > 5) && (text.length < 16)) {
+        if ((text.slice(0, 4) === "2*2*") && (text.length > 5) && (text.length < 16)) {
 
             //CALL FUNCTION TO MAKE A TRANSFER FROM MOMO TO MY SAVINGS
 
@@ -927,7 +949,7 @@ router.get('/', async (req, res) => {
                 //get account numbers
 
                 await account.clientsProducts(clientNumber).then(resAccounts => {
-                    
+
                     activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
 
                         if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
@@ -1056,7 +1078,7 @@ router.get('/', async (req, res) => {
                 }
 
                 if (isLoan === 0) {
-                    
+
                     await account.accountDetails(accountFound).then(data => {
 
                         //totalWithdrawals = data.data.summary.totalWithdrawals
@@ -1549,6 +1571,6 @@ setInterval(async () => {
         console.log(err.message)
     }
 
-}, 5000)
+}, 4000)
 
 module.exports = router
