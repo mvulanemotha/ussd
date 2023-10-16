@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
         let text = req.query.input
         let sessionId = req.query.sessionID
         let newrequest = req.query.newrequest
-
+        
         let dbText = ""
 
         // get functions to help track our progress
@@ -116,14 +116,14 @@ router.get('/', async (req, res) => {
 
                             let password = Math.floor(100000 + Math.random() * 900000)
 
-                            await customer.saveCustomers(account, username, 0, password).then(saved => {
+                            await customer.saveCustomers(account, username, 0, password).then(async saved => {
 
                                 if (saved["affectedRows"] === 1) {
 
                                     //send sms to the client
                                     let message = "Please use this password on SCBS USSD " + password;
 
-                                    sms.sendMessage(contact, message)
+                                    await sms.sendMessage(contact, message)
 
                                     response = "SCBS -:- <br>Please use the password sent to you to login thanks.";
                                     closeOropenSession = 0
@@ -155,7 +155,7 @@ router.get('/', async (req, res) => {
 
             //auth logged in user
 
-            await customer.login(contact, text).then(data => {
+            await customer.login(contact, text).then(async data => {
 
                 if (data.length > 0) {
 
@@ -167,7 +167,7 @@ router.get('/', async (req, res) => {
                 } else {
 
                     //update status of being locked
-                    customer.updateFailedLogins(contact)
+                    await customer.updateFailedLogins(contact)
 
                     // get loggin attempts
                     response = `SCBS -:- Failed to login, you will be locked out.`;
@@ -429,9 +429,9 @@ router.get('/', async (req, res) => {
                     });
 
                     //save in database the new data
-                    tempAccounts.forEach(el => {
+                    tempAccounts.forEach(async el => {
                         //callfunction to save into database the list of accounts
-                        account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
+                        await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
 
                     });
 
@@ -476,8 +476,6 @@ router.get('/', async (req, res) => {
 
         }
 
-        console.log(text.slice(0, 3))
-
         if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) === "2") && (text.slice(0, 3) !== "2*2")) {
 
 
@@ -488,7 +486,6 @@ router.get('/', async (req, res) => {
 
         }
 
-        console.log(text)
         // Prompt Enter amount to transfer
         if ((text.length === 16) && (text.indexOf('2*1*') !== -1)) {
 
@@ -553,7 +550,6 @@ router.get('/', async (req, res) => {
 
 
         // Send momo to another number
-        console.log(text.length)
 
         if ((text.indexOf('2*1*') !== -1) && (text.length >= 20)) {
 
@@ -617,13 +613,13 @@ router.get('/', async (req, res) => {
                     //create uxxID
                     uuID = uuid.v4();
 
-                    await disbursment.requestToTransfer(uuID, token, amount, thirdPartyContact).then(payRes => {
+                    await disbursment.requestToTransfer(uuID, token, amount, thirdPartyContact).then(async payRes => {
 
                         //check status
                         if (payRes["status"] === 202) {
 
                             //save request to pay details
-                            disbursment.saveDisbursmentRequest(token, uuID, amount, thirdPartyContact, accountNo, phoneNumber)
+                            await disbursment.saveDisbursmentRequest(token, uuID, amount, thirdPartyContact, accountNo, phoneNumber)
                             // phoneNumber is a contact 
 
 
@@ -638,7 +634,7 @@ router.get('/', async (req, res) => {
 
                     }).catch((err) => {
 
-                        // console.log(err.message)
+                        console.log(err.message)
 
                     })
                 })
@@ -711,13 +707,13 @@ router.get('/', async (req, res) => {
                     //create uxxID
                     uuID = uuid.v4();
 
-                    await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(payRes => {
+                    await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(async payRes => {
 
                         //check status
                         if (payRes["status"] === 202) {
 
                             //save request to pay details
-                            disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo, "12345678")
+                            await disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo, "12345678")
 
                             response = "Transfer Has Been Made."
                             closeOropenSession = 0
@@ -803,10 +799,10 @@ router.get('/', async (req, res) => {
                     });
 
 
-                    tempAccounts.forEach(el => {
+                    tempAccounts.forEach(async el => {
                         //callfunction to save into database the list of accounts
 
-                        account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
+                        await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
 
                     });
 
@@ -1002,10 +998,10 @@ router.get('/', async (req, res) => {
                     }
 
                     // we need to store 
-                    tempAccounts.forEach(el => {
+                    tempAccounts.forEach(async el => {
                         //callfunction to save into database the list of accounts
 
-                        account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"], el["isLoan"])
+                        await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"], el["isLoan"])
 
                     });
 
@@ -1046,9 +1042,7 @@ router.get('/', async (req, res) => {
                 let accountFound
 
                 await account.getSelectedAccount(preSelected, sessionId, row).then(dt => {
-
-                    console.log(dt)
-
+                    
                     dt.forEach(el => {
 
                         accountFound = el["accountNo"]
@@ -1169,7 +1163,7 @@ router.post('/', async (req, res) => {
 
     // save a new client 
 
-    customer.saveClientNumbers(req.body.cfi, req.body.name, req.body.contact, 1).then((data) => {
+    await customer.saveClientNumbers(req.body.cfi, req.body.name, req.body.contact, 1).then((data) => {
 
         if (data["affectedRows"] > 0) {
 
@@ -1377,7 +1371,7 @@ setInterval(async () => {
                     if (status.data["status"] === "FAILED") {
 
                         // update database when the transaction failed    
-                        disbursment.updateTransferRequest(2, token, xxid)
+                        await disbursment.updateTransferRequest(2, token, xxid)
 
                     }
 
@@ -1385,7 +1379,7 @@ setInterval(async () => {
                     if (status.data["status"] === "SUCCESSFUL") {
 
                         //update database to show that request was succesfully
-                        disbursment.updateTransferRequest(1, token, xxid)
+                        await disbursment.updateTransferRequest(1, token, xxid)
 
                         //send sms to client
 
@@ -1425,12 +1419,12 @@ setInterval(async () => {
                                 // sending sms to third party customer
                                 if (thirdpartyNumber !== "12345678") {
 
-                                    sms.sendMessage(phone, thirdpartyMessage)   //phone is for third party since we saved as the contact it was directed to
-                                    sms.sendMessage(thirdpartyNumber, message)
+                                    await sms.sendMessage(phone, thirdpartyMessage)   //phone is for third party since we saved as the contact it was directed to
+                                    await sms.sendMessage(thirdpartyNumber, message)
 
                                 } else {
 
-                                    sms.sendMessage(phone, message)
+                                    await sms.sendMessage(phone, message)
 
                                 }
 
@@ -1521,7 +1515,7 @@ setInterval(async () => {
                     let status = dt.data["status"]
 
                     if (status === 'FAILED') {
-                        collections.updatepaymentRequest(2, token, xxid)
+                        await collections.updatepaymentRequest(2, token, xxid)
                     }
 
 
@@ -1544,7 +1538,7 @@ setInterval(async () => {
                             let message = "Your Acc xxx" + accountNo.slice(5) + " has been credited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975"
 
 
-                            sms.sendMessage(phone, message)
+                            await sms.sendMessage(phone, message)
 
                             await sms.smsCharge(smsAccount, time.myDate(newDate)).then(async paySms => {
 
