@@ -15,7 +15,7 @@ const time = require('../modal/datetime')
 //REGISTER IF NOT REGISTRED
 router.get('/', async (req, res) => {
 
-    var response = "SCBS :-)<br><br>Please confirm if<br>you have inputed correct details.";
+    var response = "SCBS -:-<br>Network Error.";
 
     try {
 
@@ -23,7 +23,7 @@ router.get('/', async (req, res) => {
         let text = req.query.input
         let sessionId = req.query.sessionID
         let newrequest = req.query.newrequest
-        
+
         let dbText = ""
 
         // get functions to help track our progress
@@ -1042,7 +1042,7 @@ router.get('/', async (req, res) => {
                 let accountFound
 
                 await account.getSelectedAccount(preSelected, sessionId, row).then(dt => {
-                    
+
                     dt.forEach(el => {
 
                         accountFound = el["accountNo"]
