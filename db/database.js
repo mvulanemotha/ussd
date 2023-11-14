@@ -1,5 +1,5 @@
 const mysql = require('mysql');
-
+/*
 const database = mysql.createPool({
     connectionLimit: 10,
     password: 'Mvulane2@@',
@@ -10,10 +10,10 @@ const database = mysql.createPool({
     timezone: 'SAST',
     dateStrings: true,
 });
+*/
 
-/*
 const database = mysql.createPool({
-    connectionLimit: 10,
+    connectionLimit: 50,
     password: 'Mvulane2@@',
     user: 'SCBS',
     database: 'scbs_ussd',
@@ -26,7 +26,7 @@ const database = mysql.createPool({
         idle: 30000
     }
 });
-*/
+
 
 module.exports = database;
 

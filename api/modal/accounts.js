@@ -23,19 +23,19 @@ let clientsProducts = async (accountNo) => {
 
 // check savings account details
 let getAccountSavingsAccountBalance = async (accountNo) => {
-
+    
     try {
-
+        
         return await axios({
-
+            
             method: "get",
             url: process.env.url + "savingsaccounts/" + accountNo,
             withCredentials: true,
             crossdomain: true,
             headers: headers.headersMusoni()
-
+        
         })
-
+    
     } catch (error) {
         console.log(error.message)
     }
@@ -45,7 +45,7 @@ let getAccountSavingsAccountBalance = async (accountNo) => {
 
 //get client accounts where 
 let getClientAccount = async (username) => {
-
+    
     try {
 
         return await new Promise((resolve, reject) => {

@@ -358,5 +358,29 @@ let getClientDetails = async (clientNo) => {
 
 }
 
+// CHECK IF ACCOUNT IS MATURED
 
-module.exports = { getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }
+let maturedAcc = async (accountNo) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "select * from matured where accountNo = ? limit 1";
+
+            db.query(query, [accountNo], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+                return resolve(result)
+            })
+        })
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
+
+module.exports = { maturedAcc, getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }

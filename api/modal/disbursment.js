@@ -11,9 +11,9 @@ dotenv.config();
 //get balance of client
 
 let requestToTransfer = async (uuid, token, amount, msisdn) => {
-
+    
     try {
-
+        
         let data = {
 
             "amount": amount,
@@ -284,9 +284,9 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
 
 
 let payMoMoCharge = async (clientAccount, amount, date) => {
-
+    
     try {
-
+        
         var data = {
             "chargeId": 20,
             "locale": "en",
@@ -337,7 +337,7 @@ let payCharge = async (accountNo, chargeid, amount, date) => {
         }).catch((error) => {
             console.log(error)
         })
-
+    
     } catch (error) {
         console.log(error)
     }

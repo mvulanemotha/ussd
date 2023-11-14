@@ -14,7 +14,7 @@ let headersMusoni = () => {
   let musonCredentials = username + ':' + password
 
   let buff = new Buffer.from(musonCredentials)
-
+  
   let base64Credentials = buff.toString('base64');
 
   let authHeader = 'Basic ' + base64Credentials
