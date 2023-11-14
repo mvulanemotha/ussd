@@ -985,9 +985,9 @@ router.get('/', async (req, res) => {
                             }
 
                             count = count + 1
-                            response += count + ". <span style = 'font-size: medium'>" + el["shortProductName"] + "  " + el["accountNo"] + "</span>"
-                            response += "<br> <span style = 'font-size: small'>Balance E" + accountBalance + "</span><br>"
-                            response += "<span style = 'font-size: small'> Available E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "</span><br><br>"
+                            response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + ""
+                            response += "<br> Balance E" + accountBalance + "<br>"
+                            response += " Available E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br><br>"
 
                             //save available accounts
                             tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -1004,7 +1004,7 @@ router.get('/', async (req, res) => {
                         //response += "<br>Enter Amount.<br>";
                         response += "00. Back<br>";
                         response += "0. Exit";
-
+                        
                         closeOropenSession = 1
 
                     } else {
