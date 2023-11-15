@@ -239,7 +239,7 @@ router.get('/', async (req, res) => {
         // check 
         if (text === "2*3*2") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "Enter Amount<br><br>"
             response += "00. Back<br>0. Exit";
             closeOropenSession = 0
@@ -357,7 +357,7 @@ router.get('/', async (req, res) => {
                                                             //save request to pay details
                                                             await disbursment.saveDisbursmentRequest(token, uuID, amountBorrowed.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber)
 
-                                                            response = "SCBS -:-<br><br>"
+                                                            response = "SCBS -:-<br>"
                                                             response += "Quick Loan Approved"
                                                             closeOropenSession = 0
 
@@ -493,7 +493,7 @@ router.get('/', async (req, res) => {
                                                         //save request to pay details
                                                         await disbursment.saveDisbursmentRequest(token, uuID, amountThatWeCanBorrow.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber)
 
-                                                        response = "SCBS -:-<br><br>"
+                                                        response = "SCBS -:-<br>"
                                                         response += "Quick Loan Approved"
                                                         closeOropenSession = 0
 
@@ -652,7 +652,7 @@ router.get('/', async (req, res) => {
         // utilities
         if (text === "3") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "1. EWSC"
 
             response += "<br><br>00 Back"
@@ -664,7 +664,7 @@ router.get('/', async (req, res) => {
 
         if (text === "3*1") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "Coming Soon"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
@@ -690,7 +690,7 @@ router.get('/', async (req, res) => {
 
         if (text === "4*1") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "Coming Soon"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
@@ -702,7 +702,7 @@ router.get('/', async (req, res) => {
 
         if (text === "4*2") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "Coming Soon"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
@@ -713,7 +713,7 @@ router.get('/', async (req, res) => {
 
         if (text === "4*3") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "Coming Soon"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
@@ -725,7 +725,7 @@ router.get('/', async (req, res) => {
         // gives customer a menu of a change of password
         if (text == "5") {
 
-            response = "SCBS -:-<br><br>"
+            response = "SCBS -:-<br>"
             response += "1. My Profile<br>"
             response += "2. Change Password"
             response += "<br><br>00 Back"
@@ -740,7 +740,7 @@ router.get('/', async (req, res) => {
 
             response = "SCBS -:-<br>"
             response += "You are about to change your password."
-            response += "<br><br>Enter New password"
+            response += "<br>Enter New password"
             response += "<br><br>00 Back"
             response += "<br>0 Exit"
 
@@ -763,7 +763,7 @@ router.get('/', async (req, res) => {
 
                 // call function to display customer info
 
-                response = "My Profile -:-<br><br>"
+                response = "My Profile -:-<br>"
 
                 await customer.getClientDetails(clientNumber).then(dt => {
 
@@ -803,7 +803,7 @@ router.get('/', async (req, res) => {
 
             if (text.slice(4).length !== 6) {
 
-                response = "SCBS -:-<br><br>Password must have 6 charecters."
+                response = "SCBS -:-<br>Password must have 6 charecters."
                 closeOropenSession = 0
 
             } else {
@@ -968,7 +968,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = "Select Acc No -:-<br><br>";
+                    response = "Select Acc No -:-<br>";
 
                     if (mulaMatureacc === 0) {
 
@@ -987,7 +987,7 @@ router.get('/', async (req, res) => {
                             count = count + 1
                             response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + ""
                             //response += "<br> Balance E" + accountBalance + "<br>"
-                            response += "E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br><br>"
+                            response += "<br>E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br>"
 
                             //save available accounts
                             tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -1002,7 +1002,7 @@ router.get('/', async (req, res) => {
                         });
 
                         //response += "<br>Enter Amount.<br>";
-                        response += "00. Back<br>";
+                        response += "<br>00. Back<br>";
                         response += "0. Exit";
 
                         closeOropenSession = 1
@@ -1029,7 +1029,7 @@ router.get('/', async (req, res) => {
         if (text === "2*1*1" || text === "2*1*2") {
 
 
-            response = "Transfer For -:-<br><br>"
+            response = "SCBS -:- Transfer For<br><br>"
             response += "1. Self<br>"
             response += "2. Another MoMo Account"
 
@@ -1045,7 +1045,7 @@ router.get('/', async (req, res) => {
 
         if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) !== "2")) {
 
-            response = "Enter Amount To Transfer -:-<br><br>"
+            response = "SCBS -:- Enter Amount To Transfer<br><br>"
 
             response += "00. Back<br>";
             response += "0. Exit";
@@ -1057,7 +1057,7 @@ router.get('/', async (req, res) => {
         if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) === "2") && (text.slice(0, 3) !== "2*2")) {
 
 
-            response = "Enter MoMo Account -:- <br><br>"
+            response = "SCBS -:- Enter MoMo Account <br><br>"
             response += "00. Back<br>";
             response += "0. Exit";
             closeOropenSession = 1;
@@ -1093,7 +1093,7 @@ router.get('/', async (req, res) => {
                 response = "Confirm MoMo Account<br>"
                 response += transferContact
 
-                response += ".<br><br>"
+                response += ".<br>"
                 response += "1. YES<br>"
 
                 response += "<br>00. Back<br>";
@@ -1118,9 +1118,9 @@ router.get('/', async (req, res) => {
         // sending money to a third party user
         if (((text.indexOf('2*1*') !== -1)) && (text.length === 18)) {
 
-            response = "Enter Amount"
+            response = "SCBS -:- Enter Amount"
 
-            response += "<br><br>00. Back<br>";
+            response += "<br>00. Back<br>";
             response += "0. Exit";
             closeOropenSession = 1
 
@@ -1267,7 +1267,7 @@ router.get('/', async (req, res) => {
 
             if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
-                response = "SCBS -:-<br><br>You have insufficient funds."
+                response = "SCBS -:-<br>You have insufficient funds."
 
                 closeOropenSession = 0;
 
@@ -1351,7 +1351,7 @@ router.get('/', async (req, res) => {
 
                     // display accounts to the customer
 
-                    response = "Select Acc -:- <br><br>";
+                    response = "SCBS -:- Select Acc<br>";
 
                     let accountBalance = 0
                     let count = 0
@@ -1461,7 +1461,7 @@ router.get('/', async (req, res) => {
 
                                 if (dt["affectedRows"] === 1) {
 
-                                    response = "SCBS -:- <br><br>Please make an approval from your MoMo account."
+                                    response = "SCBS -:- <br>Please make an approval from your MoMo account."
                                     closeOropenSession = 0
 
                                 } else {
@@ -1542,7 +1542,7 @@ router.get('/', async (req, res) => {
                     }
                     // display accounts to the customer
 
-                    response = "My Accounts -:-<br><br>";
+                    response = "My Accounts -:-<br>";
                     response += "Savings<br>"
                     let tempAccounts = []
                     let count = 0
@@ -1686,9 +1686,9 @@ router.get('/', async (req, res) => {
                             this.accountBalance = 0
                         }
 
-                        response = "My Account Info:<br>"//<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
+                        response = "SCBS -:-<br><br> My Account Info<br>"//<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
                         //response += "Interest: E " + this.totalInterestPosted + "<br>"
-                        response += "<br>Balance E " + this.accountBalance + "<br><br>"
+                        response += "Balance E " + this.accountBalance + "<br><br>"
                         response += "00. Back<br>"
                         response += "0. Exit";
 
@@ -1707,8 +1707,8 @@ router.get('/', async (req, res) => {
         //need a way to dertemine if we are closing the or the request is still open
 
         if (response === "NULL") {
-
-            response = "Wrong Input Field Was Entered:<br><br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
+            
+            response = "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
 
             await customer.updateInputSession(phoneNumber.slice(3), sessionId, dbText.slice(0, 11)).then(dtt => {
                 //console.log(dtt)
