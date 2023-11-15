@@ -295,7 +295,7 @@ router.get('/', async (req, res) => {
                     if (parseFloat(amountBorrowed) > parseFloat(amountThatWeCanBorrow)) {
 
                         response = "SCBS -:-"
-                        response += "<br><br>"
+                        response += "<br>"
                         response += "The amount you are borrowing is greater than that you can be offered."
                         response += "<br><br>00. Back<br>0. Exit";
 
@@ -986,8 +986,8 @@ router.get('/', async (req, res) => {
 
                             count = count + 1
                             response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + ""
-                            response += "<br> Balance E" + accountBalance + "<br>"
-                            response += " Available E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br><br>"
+                            //response += "<br> Balance E" + accountBalance + "<br>"
+                            response += "E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br><br>"
 
                             //save available accounts
                             tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -1004,12 +1004,12 @@ router.get('/', async (req, res) => {
                         //response += "<br>Enter Amount.<br>";
                         response += "00. Back<br>";
                         response += "0. Exit";
-                        
+
                         closeOropenSession = 1
 
                     } else {
 
-                        response = "SCBS -:-<br><br>"
+                        response = "SCBS -:-<br>"
                         //response += "Service not available at the moment."
                         response += "Your account is currently not allowed to transact."
                         response += "<br><br>00. Back<br>";
