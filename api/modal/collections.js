@@ -47,9 +47,9 @@ let requestToPay = async (uuid, payToken, amount, msisdn) => {
 let momoStatus = async (token, number) => {
 
     try {
-   
+
         //collection header
-        
+
         let header = {
             'Ocp-Apim-Subscription-Key': 'b38eedce669f43808c7e5ac7e33b249e', //process.env.SubscriptionKey, //process.env.collections_secondary_key,
             'Authorization': 'Bearer ' + token,
@@ -57,7 +57,7 @@ let momoStatus = async (token, number) => {
             'Content-Type': 'application/json',
             'keep-alive': true
         }
-        
+
         return await axios({
             method: "get",
             url: "https://proxy.momoapi.mtn.com/collection/v1_0/accountholder/msisdn/" + number + "/active", //'https://proxy.momoapi.mtn.com/collection/v1_0/accountholder/msisdn/' + number + '/active',
@@ -72,6 +72,36 @@ let momoStatus = async (token, number) => {
     }
 
 }
+
+// get momo details
+let momoAccDetails = async (token, number) => {
+
+    try {
+
+        let header = {
+            'Ocp-Apim-Subscription-Key': 'b38eedce669f43808c7e5ac7e33b249e', //process.env.SubscriptionKey, //process.env.collections_secondary_key,
+            'Authorization': 'Bearer ' + token,
+            'X-Target-Environment': 'mtnswaziland',
+            'Content-Type': 'application/json',
+            'keep-alive': true
+        }
+        //number
+        return await axios({
+
+            method: "get",
+            url: "https://proxy.momoapi.mtn.com/collection/v1_0/accountholder/msisdn/" + number + "/basicuserinfo",
+            withCredentials: true,
+            crossdomain: true,
+            headers: header
+
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+}
+
 
 // request to pay transaction status
 let paymentStatus = async (xreference, token) => {
@@ -130,7 +160,7 @@ let saveRequestTransaction = async (token, xxid, amount, phone, accountNo) => {
                 if (err) {
                     return reject(err)
                 }
-                
+
                 return resolve(result)
 
             })
@@ -242,4 +272,4 @@ let makeDeposit = async (amount, accountNo, phoneNumber, depositDate) => {
 }
 
 
-module.exports = { momoStatus, makeDeposit, requestToPay, paymentStatus, checkBalance, saveRequestTransaction, getPaymentStatus, updatepaymentRequest }
+module.exports = { momoAccDetails, momoStatus, makeDeposit, requestToPay, paymentStatus, checkBalance, saveRequestTransaction, getPaymentStatus, updatepaymentRequest }

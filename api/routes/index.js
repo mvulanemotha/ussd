@@ -1069,13 +1069,14 @@ router.get('/', async (req, res) => {
 
             let transferContact = text.slice(8, 16)
             let numberStatus
+            let numberToken
             //check if number is registred with mtn
             await token.token().then(async (data) => {
 
-                let token = data.data
+                numberToken = data.data
 
                 //get a token then use it to make request
-                await collections.momoStatus(token["access_token"], "268" + transferContact).then(status => {
+                await collections.momoStatus(numberToken["access_token"], "268" + transferContact).then(status => {
 
                     numberStatus = status.data["result"]
 
@@ -1089,16 +1090,24 @@ router.get('/', async (req, res) => {
 
             if (numberStatus === true) {
 
+                //
 
-                response = "Confirm MoMo Account<br>"
-                response += transferContact
+                await collections.momoAccDetails(numberToken["access_token"], "268" + transferContact).then(data => {
 
-                response += ".<br>"
-                response += "1. YES<br>"
+                    console.log(data.data)
 
-                response += "<br>00. Back<br>";
-                response += "0. Exit";
-                closeOropenSession = 1;
+                    response = "Confirm MoMo Acc Details<br>"
+                    response += transferContact
+                    response += "<br>" + data.data["given_name"] + "<br>" + data.data["family_name"]
+
+                    response += ".<br><br>"
+                    response += "1. YES<br>"
+
+                    response += "<br>00. Back<br>";
+                    response += "0. Exit";
+                    closeOropenSession = 1;
+
+                })
 
             } else {
 
@@ -1707,7 +1716,7 @@ router.get('/', async (req, res) => {
         //need a way to dertemine if we are closing the or the request is still open
 
         if (response === "NULL") {
-            
+
             response = "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
 
             await customer.updateInputSession(phoneNumber.slice(3), sessionId, dbText.slice(0, 11)).then(dtt => {
