@@ -43,7 +43,7 @@ let login = async (username, password) => {
 
         return await new Promise((resolve, reject) => {
 
-            let query = "select * from customers where username = ? and password = ?"
+            let query = "select * from customers where username = ? and password = ? limit 1"
 
             db.query(query, [username, password], (err, result) => {
 
@@ -60,6 +60,31 @@ let login = async (username, password) => {
 
 }
 
+//update database for a succesfully login on session
+let loggedUpdate = async (sessionId, contact) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "update sessions set logged = 1 where sessionId = ? and phone = ? limit 1"
+
+            db.query(query, [sessionId, contact], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+        })
+
+    } catch (error) {
+        console.log(error.messagef)
+    }
+
+}
 
 // check if user is a customer
 
@@ -383,4 +408,4 @@ let maturedAcc = async (accountNo) => {
 }
 
 
-module.exports = { maturedAcc, getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }
+module.exports = { loggedUpdate, maturedAcc, getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }

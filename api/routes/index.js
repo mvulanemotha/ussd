@@ -25,11 +25,14 @@ router.get('/', async (req, res) => {
         let text = req.query.input
         let sessionId = req.query.sessionID
         let newrequest = req.query.newrequest
-
+        let closeOropenSession = 0
         let dbText = ""
+        let logged = 0; //check if a user is logged
 
         // get functions to help track our progress
         // add new session in database
+
+
 
         if (newrequest === "1") {
 
@@ -43,6 +46,7 @@ router.get('/', async (req, res) => {
 
                 data.forEach(dt => {
                     dbText = dt["input"]
+                    logged = dt["logged"]
                 })
 
                 //try and remove the six digit password     
@@ -56,9 +60,6 @@ router.get('/', async (req, res) => {
 
             })
         }
-
-
-        let closeOropenSession = 0
 
         // removing the first four characters of a //text e.g 7227 
         text = text.slice(5)
@@ -106,8 +107,6 @@ router.get('/', async (req, res) => {
 
                     await customer.checkNewUser(contact).then(async (dt) => {
 
-                        console.log(dt)
-
                         let account, username;
 
                         dt.forEach((e) => {
@@ -131,7 +130,7 @@ router.get('/', async (req, res) => {
 
                                     await sms.sendMessage(contact, message)
 
-                                    response = "SCBS -:- <br>Please use the password sent to you to login thanks.";
+                                    response = "SCBS -:- <br>Please use the password sent to you to login.";
                                     closeOropenSession = 0
 
                                 } else {
@@ -166,7 +165,10 @@ router.get('/', async (req, res) => {
                 if (data.length > 0) {
 
                     //reset loggin attempts to zero incase there was a failed login
-                    customer.resetLoginAttempts(contact)
+                    await customer.resetLoginAttempts(contact)
+                    await customer.loggedUpdate(sessionId, contact)
+                    //update database for succesfull login
+
                     response = " Menu -:-<br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
                     closeOropenSession = 1
 
@@ -176,7 +178,7 @@ router.get('/', async (req, res) => {
                     await customer.updateFailedLogins(contact)
 
                     // get loggin attempts
-                    response = `SCBS -:- Failed to login, you will be locked out.`;
+                    response = `SCBS -:- Failed to login, after 3 attempts you will be locked out.`;
                     closeOropenSession = 0
                 }
             })
@@ -184,125 +186,264 @@ router.get('/', async (req, res) => {
 
         }
 
-        //try and remove the password on the text
-        // dont touach
-        text = text.slice(7)
+        // testing if a user is logged 0 if not 1 if logged
+        if ((logged === 1) && (newrequest === "0")) {
 
-        //check for MoMo Quick loan
-        if ((text === "2")) {
+            //try and remove the password on the text
+            // dont touach
+            text = text.slice(7)
 
-            // viewing mtn momo
-            // check if client has a 
+            //check for MoMo Quick loan
+            if ((text === "2")) {
+
+                // viewing mtn momo
+                // check if client has a 
 
 
-            let contact = phoneNumber.slice(3)
-            let customerCfi;
-            let savings
+                let contact = phoneNumber.slice(3)
+                let customerCfi;
+                let savings
 
-            // get customer details
-            await account.getClientAccount(contact).then(async (data) => {
+                // get customer details
+                await account.getClientAccount(contact).then(async (data) => {
 
-                data.forEach(el => {
-                    customerCfi = el["account"]
-                })
-
-                await account.clientsProducts(customerCfi).then(async dt => {
-
-                    savings = dt.data.savingsAccounts
-
-                    savings = savings.filter(el => {
-
-                        if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
-                            return true
-                        }
-                        return false
+                    data.forEach(el => {
+                        customerCfi = el["account"]
                     })
+
+                    await account.clientsProducts(customerCfi).then(async dt => {
+
+                        savings = dt.data.savingsAccounts
+
+                        savings = savings.filter(el => {
+
+                            if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
+                                return true
+                            }
+                            return false
+                        })
+                    })
+
                 })
 
-            })
 
-
-            response = "MoMo -:-<br><br>"
-            response += "Transfer<br>"
-            response += "1. From Savings<br>2. To Savings<br><br>"
-            /*
-            if (savings.length > 0) {
-                response += "Quick Loan<br>"
-                response += "3. View<br><br>"
+                response = "MoMo -:-<br><br>"
+                response += "Transfer<br>"
+                response += "1. From Savings<br>2. To Savings<br><br>"
+                /*
+                if (savings.length > 0) {
+                    response += "Quick Loan<br>"
+                    response += "3. View<br><br>"
+                }
+                */
+                response += "00. Back<br>0. Exit";
+                closeOropenSession = 1
             }
-            */
-            response += "00. Back<br>0. Exit";
-            closeOropenSession = 1
-        }
 
 
-        // check 
-        if (text === "2*3*2") {
+            // check 
+            if (text === "2*3*2") {
 
-            response = "SCBS -:-<br>"
-            response += "Enter Amount<br><br>"
-            response += "00. Back<br>0. Exit";
-            closeOropenSession = 0
+                response = "SCBS -:-<br>"
+                response += "Enter Amount<br><br>"
+                response += "00. Back<br>0. Exit";
+                closeOropenSession = 0
 
-        }
+            }
 
-        if ((text.indexOf("2*3*2") !== -1) && (text.length >= 7)) {
+            if ((text.indexOf("2*3*2") !== -1) && (text.length >= 7)) {
 
-            let amountBorrowed = parseFloat(text.slice(6))
+                let amountBorrowed = parseFloat(text.slice(6))
 
-            let contact = phoneNumber.slice(3)
-            let customerCfi;
-            let mulaAccountNo;
+                let contact = phoneNumber.slice(3)
+                let customerCfi;
+                let mulaAccountNo;
 
-            // get customer details
-            await account.getClientAccount(contact).then(async (data) => {
+                // get customer details
+                await account.getClientAccount(contact).then(async (data) => {
 
-                let totalAmount = 0
+                    let totalAmount = 0
 
-                data.forEach(el => {
-                    customerCfi = el["account"]
+                    data.forEach(el => {
+                        customerCfi = el["account"]
+                    })
+
+                    await account.clientsProducts(customerCfi).then(async dt => {
+
+                        let savings = dt.data.savingsAccounts
+
+                        savings = savings.filter(el => {
+
+                            if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
+                                return true
+                            }
+                            return false
+                        })
+
+                        //calculate how much money is paid to a client montly
+
+                        //let minPay = parseFloat(((this.investment) * ((1 + (percent / 360)) ** 28)).toFixed(2)) - this.investment
+                        savings.forEach(el => {
+
+                            totalAmount += parseFloat(el["accountBalance"])
+                        })
+
+                        let percent = (8 / 100)
+                        let interestPosted = parseFloat(((totalAmount) * ((1 + (percent / 360)) ** 30)).toFixed(2)) - totalAmount
+
+                        // calcu;late loan amount
+
+                        let amountThatWeCanBorrow = quickLoan.calculateQuickLoanAmount(interestPosted)
+
+                        //check if amount being borrowed is less than inputed amount
+
+                        if (parseFloat(amountBorrowed) > parseFloat(amountThatWeCanBorrow)) {
+
+                            response = "SCBS -:-"
+                            response += "<br>"
+                            response += "The amount you are borrowing is greater than that you can be offered."
+                            response += "<br><br>00. Back<br>0. Exit";
+
+                            closeOropenSession = 1;
+
+                        } else {
+                            //get mula accountNo
+                            await account.clientsProducts(customerCfi).then(dt => {
+
+                                let savings = dt.data.savingsAccounts
+
+                                savings = savings.filter(el => {
+
+                                    if ((el["status"]["value"] === "Active") && (el["productName"] === "Mula Account")) {
+                                        return true
+                                    }
+                                    return false
+                                })
+
+                                savings.forEach(ss => {
+
+                                    mulaAccountNo = ss["accountNo"]
+
+                                })
+
+                            })
+
+
+                            await quickLoan.saveQuickLoan(contact, sessionId, mulaAccountNo, amountBorrowed).then(async dt => {
+
+                                if (dt["affectedRows"] === 1) {
+
+                                    let newDate = time.getTime().slice(0, 10)
+
+                                    await quickLoan.createQuickLoanCharge(mulaAccountNo, amountBorrowed.toFixed(2), time.myDate(newDate)).then(async st => {
+
+                                        if (st.status === 200) {
+
+                                            //////////////////////////////////////////
+                                            await quickLoan.payCharge(mulaAccountNo, st["data"]["resourceId"], amountBorrowed.toFixed(2), time.myDate(newDate)).then(async payed => {
+
+                                                if (payed.status === 200) {
+
+                                                    //generate an uxxd 
+                                                    await disbursementHeader.token().then(async neWtoken => {
+
+                                                        let token = neWtoken.data["access_token"]
+
+                                                        // check if customer has enough money in his savings acccount
+
+                                                        //create uxxID
+                                                        uuID = uuid.v4();
+
+                                                        await disbursment.requestToTransfer(uuID, token, amountBorrowed.toFixed(2), "268" + contact).then(async payRes => {
+
+                                                            //check status
+                                                            if (payRes["status"] === 202) {
+
+                                                                //save request to pay details
+                                                                await disbursment.saveDisbursmentRequest(token, uuID, amountBorrowed.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber)
+
+                                                                response = "SCBS -:-<br>"
+                                                                response += "Quick Loan Approved"
+                                                                closeOropenSession = 0
+
+                                                            } else {
+
+                                                                response = "Failed To Allocate Quick Loan."
+                                                                closeOropenSession = 0
+                                                            }
+
+                                                        }).catch((err) => {
+
+                                                            console.log(err.message)
+
+                                                        })
+                                                    })
+                                                }
+                                            })
+                                        }
+                                    })
+
+                                } else {
+
+                                    response = "SCBS -:-<br>"
+                                    response += "Failed To Allocate You A Quick Loan"
+                                    closeOropenSession = 0
+                                }
+
+                            })  // end of saving a Money borrowed in database
+
+                        }
+
+                    })
                 })
 
-                await account.clientsProducts(customerCfi).then(async dt => {
 
-                    let savings = dt.data.savingsAccounts
+            }
 
-                    savings = savings.filter(el => {
+            //accept default amount
+            if (text === "2*3*1") {
 
-                        if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
-                            return true
-                        }
-                        return false
+                let contact = phoneNumber.slice(3)
+                let customerCfi;
+                let mulaAccountNo;
+
+                // get customer details
+                await account.getClientAccount(contact).then(async (data) => {
+
+                    let totalAmount = 0
+
+                    data.forEach(el => {
+                        customerCfi = el["account"]
                     })
 
-                    //calculate how much money is paid to a client montly
+                    await account.clientsProducts(customerCfi).then(async dt => {
 
-                    //let minPay = parseFloat(((this.investment) * ((1 + (percent / 360)) ** 28)).toFixed(2)) - this.investment
-                    savings.forEach(el => {
+                        let savings = dt.data.savingsAccounts
 
-                        totalAmount += parseFloat(el["accountBalance"])
-                    })
+                        savings = savings.filter(el => {
 
-                    let percent = (8 / 100)
-                    let interestPosted = parseFloat(((totalAmount) * ((1 + (percent / 360)) ** 30)).toFixed(2)) - totalAmount
+                            if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
+                                return true
+                            }
+                            return false
+                        })
 
-                    // calcu;late loan amount
+                        //calculate how much money is paid to a client montly
 
-                    let amountThatWeCanBorrow = quickLoan.calculateQuickLoanAmount(interestPosted)
+                        //let minPay = parseFloat(((this.investment) * ((1 + (percent / 360)) ** 28)).toFixed(2)) - this.investment
+                        savings.forEach(el => {
 
-                    //check if amount being borrowed is less than inputed amount
+                            totalAmount += parseFloat(el["accountBalance"])
+                        })
 
-                    if (parseFloat(amountBorrowed) > parseFloat(amountThatWeCanBorrow)) {
+                        let percent = (8 / 100)
+                        let interestPosted = parseFloat(((totalAmount) * ((1 + (percent / 360)) ** 30)).toFixed(2)) - totalAmount
 
-                        response = "SCBS -:-"
-                        response += "<br>"
-                        response += "The amount you are borrowing is greater than that you can be offered."
-                        response += "<br><br>00. Back<br>0. Exit";
+                        // calcu;late loan amount
 
-                        closeOropenSession = 1;
+                        let amountThatWeCanBorrow = quickLoan.calculateQuickLoanAmount(interestPosted)
 
-                    } else {
-                        //get mula accountNo
+                        //check balance of mula 
                         await account.clientsProducts(customerCfi).then(dt => {
 
                             let savings = dt.data.savingsAccounts
@@ -324,18 +465,18 @@ router.get('/', async (req, res) => {
                         })
 
 
-                        await quickLoan.saveQuickLoan(contact, sessionId, mulaAccountNo, amountBorrowed).then(async dt => {
+                        await quickLoan.saveQuickLoan(contact, sessionId, mulaAccountNo, amountThatWeCanBorrow).then(async dt => {
 
                             if (dt["affectedRows"] === 1) {
 
                                 let newDate = time.getTime().slice(0, 10)
 
-                                await quickLoan.createQuickLoanCharge(mulaAccountNo, amountBorrowed.toFixed(2), time.myDate(newDate)).then(async st => {
+                                await quickLoan.createQuickLoanCharge(mulaAccountNo, amountThatWeCanBorrow.toFixed(2), time.myDate(newDate)).then(async st => {
 
                                     if (st.status === 200) {
 
                                         //////////////////////////////////////////
-                                        await quickLoan.payCharge(mulaAccountNo, st["data"]["resourceId"], amountBorrowed.toFixed(2), time.myDate(newDate)).then(async payed => {
+                                        await quickLoan.payCharge(mulaAccountNo, st["data"]["resourceId"], amountThatWeCanBorrow.toFixed(2), time.myDate(newDate)).then(async payed => {
 
                                             if (payed.status === 200) {
 
@@ -349,13 +490,13 @@ router.get('/', async (req, res) => {
                                                     //create uxxID
                                                     uuID = uuid.v4();
 
-                                                    await disbursment.requestToTransfer(uuID, token, amountBorrowed.toFixed(2), "268" + contact).then(async payRes => {
+                                                    await disbursment.requestToTransfer(uuID, token, amountThatWeCanBorrow.toFixed(2), "268" + contact).then(async payRes => {
 
                                                         //check status
                                                         if (payRes["status"] === 202) {
 
                                                             //save request to pay details
-                                                            await disbursment.saveDisbursmentRequest(token, uuID, amountBorrowed.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber)
+                                                            await disbursment.saveDisbursmentRequest(token, uuID, amountThatWeCanBorrow.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber)
 
                                                             response = "SCBS -:-<br>"
                                                             response += "Quick Loan Approved"
@@ -384,599 +525,852 @@ router.get('/', async (req, res) => {
                                 response += "Failed To Allocate You A Quick Loan"
                                 closeOropenSession = 0
                             }
+                        })
+                    })
+                })
 
-                        })  // end of saving a Money borrowed in database
+            }
+
+
+            //quick loan section
+            if ((text === "2*3")) {
+
+                let contact = phoneNumber.slice(3)
+                let customerCfi;
+
+                //check if this month loan is active
+                await quickLoan.getQuickLoan(contact).then(async dt => {
+
+                    if (dt.length === 0) {
+
+                        // get customer details
+                        await account.getClientAccount(contact).then(async (data) => {
+
+                            let totalAmount = 0
+
+                            data.forEach(el => {
+                                customerCfi = el["account"]
+                            })
+
+                            await account.clientsProducts(customerCfi).then(dt => {
+
+                                let savings = dt.data.savingsAccounts
+
+                                savings = savings.filter(el => {
+
+                                    if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
+                                        return true
+                                    }
+                                    return false
+                                })
+
+                                //calculate how much money is paid to a client montly
+
+                                //let minPay = parseFloat(((this.investment) * ((1 + (percent / 360)) ** 28)).toFixed(2)) - this.investment
+                                savings.forEach(el => {
+
+                                    totalAmount += parseFloat(el["accountBalance"])
+                                })
+
+                                let percent = (8 / 100)
+                                let interestPosted = parseFloat(((totalAmount) * ((1 + (percent / 360)) ** 30)).toFixed(2)) - totalAmount
+
+                                // calcu;late loan amount
+
+                                let amountThatWeCanBorrow = quickLoan.calculateQuickLoanAmount(interestPosted)
+
+                                response = "SCBS -:-<br>"
+                                response += "Borrow up to "
+                                response += "E" + amountThatWeCanBorrow.toFixed(2)
+
+                                response += "<br>1. Accept Amount"
+                                response += "<br>2. Other Amount"
+
+                                response += "<br><br>00. Back<br>0. Exit";
+                                closeOropenSession = 1
+
+
+                            })
+
+                        })
+
+                    } else {
+
+                        // get     
+
+                        let pendingAmount = 0
+                        let mulaAccountBalance = 0
+                        let mulaAccountNo = 0
+
+
+                        await account.getClientAccount(contact).then(async (data) => {
+
+                            data.forEach(el => {
+                                customerCfi = el["account"]
+                            })
+
+                            //check balance of mula 
+                            await account.clientsProducts(customerCfi).then(dt => {
+
+                                let savings = dt.data.savingsAccounts
+
+                                savings = savings.filter(el => {
+
+                                    if ((el["status"]["value"] === "Active") && (el["productName"] === "Mula Account")) {
+                                        return true
+                                    }
+                                    return false
+                                })
+
+                                savings.forEach(ss => {
+                                    mulaAccountNo = ss["accountNo"]
+                                })
+                            })
+                        })
+
+                        dt.forEach(el => {
+                            pendingAmount = el["borrowedAmount"]
+
+                        })
+
+                        //check Mula account balance
+                        await account.getAccountSavingsAccountBalance(mulaAccountNo).then(accBalance => {
+
+                            mulaAccountBalance = accBalance["data"]["summary"]["accountBalance"]
+
+                        })
+
+                        response = "SCBS -:-<br>"
+                        response += "Your Quick Loan<br>"
+                        response += "E" + pendingAmount
+                        response += "<br><br>Account Details<br>"
+                        response += mulaAccountNo
+                        response += "<br>E " + mulaAccountBalance
+                        response += "<br><br>00. Back<br>0. Exit";
+                        closeOropenSession = 1
 
                     }
+                })
+            }
+
+
+            // utilities
+            if (text === "3") {
+
+                response = "SCBS -:-<br><br>"
+                response += "1. EWSC"
+
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+            if (text === "3*1") {
+
+                response = "SCBS -:-<br><br>"
+                response += "Coming Soon"
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+            //prepaid 
+            if (text === "4") {
+
+                response = "SCBS -:-<br>"
+                response += "1. Airtime<br>"
+                response += "2. Bundles <br>"
+                response += "3. Electricity"
+
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+            if (text === "4*1") {
+
+                response = "SCBS -:-<br><br>"
+                response += "Coming Soon"
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+
+            if (text === "4*2") {
+
+                response = "SCBS -:-<br><br>"
+                response += "Coming Soon"
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+            if (text === "4*3") {
+
+                response = "SCBS -:-<br><br>"
+                response += "Coming Soon"
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+            // gives customer a menu of a change of password
+            if (text == "5") {
+
+                response = "SCBS -:-<br>"
+                response += "1. My Profile<br>"
+                response += "2. Change Password"
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+
+            }
+
+            // enter new password and update password in the datanase
+            if ((text == "5*2")) {
+
+                response = "SCBS -:-<br>"
+                response += "You are about to change your password."
+                response += "<br>Enter New password"
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+
+                closeOropenSession = 1
+            }
+
+            //display client info
+            if (text == "5*1") {
+
+
+                let contact = phoneNumber.slice(3)
+                // get customer details
+                await account.getClientAccount(contact).then(async (data) => {
+
+                    let clientNumber;
+
+                    data.forEach(el => {
+                        clientNumber = el["account"]
+                    })
+
+                    // call function to display customer info
+
+                    response = "My Profile -:-<br>"
+
+                    await customer.getClientDetails(clientNumber).then(dt => {
+
+                        // return birthdate
+
+                        let newDate = time.birthDate(dt.data.dateOfBirth[0], dt.data.dateOfBirth[1], dt.data.dateOfBirth[2])
+
+
+                        response += dt.data.displayName + "<br>"
+                        response += "D.O.B  " + newDate + "<br>"
+                        response += dt.data.mobileNo + "<br>"
+                        response += dt.data.emailAddress
+                    })
+
+                }).catch(errr => {
+
+                    console.log(errr.message)
 
                 })
-            })
 
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
 
-        }
+                closeOropenSession = 1
 
-        //accept default amount
-        if (text === "2*3*1") {
+            }
 
-            let contact = phoneNumber.slice(3)
-            let customerCfi;
-            let mulaAccountNo;
+            // change passwords
 
-            // get customer details
-            await account.getClientAccount(contact).then(async (data) => {
+            if ((text.indexOf('5*2*') !== -1)) {
 
-                let totalAmount = 0
+                //first check the number of characters from the strings
+                let newPass = text.slice(4)
+                let phone = phoneNumber.slice(3)
 
-                data.forEach(el => {
-                    customerCfi = el["account"]
-                })
+                //check if input is a six digit value
 
-                await account.clientsProducts(customerCfi).then(async dt => {
+                if (text.slice(4).length !== 6) {
 
-                    let savings = dt.data.savingsAccounts
+                    response = "SCBS -:-<br>Password must have 6 charecters."
+                    closeOropenSession = 0
 
-                    savings = savings.filter(el => {
+                } else {
 
-                        if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
-                            return true
+                    // update database with new password
+
+                    await customer.changePassword(phone, newPass).then((data) => {
+
+                        if (data["affectedRows"] === 1) {
+
+                            response = "SCBS -:-<br> Password Changed Successfully."
+
+                        } else {
+
+                            response = "SCBS -:-<br> Failed To Change Password."
                         }
-                        return false
                     })
 
-                    //calculate how much money is paid to a client montly
+                    closeOropenSession = 0;
 
-                    //let minPay = parseFloat(((this.investment) * ((1 + (percent / 360)) ** 28)).toFixed(2)) - this.investment
-                    savings.forEach(el => {
+                }
 
-                        totalAmount += parseFloat(el["accountBalance"])
+            }
+
+
+            if (text === "2*1") { // get money from savings account to mobile money
+
+                /*
+                var activeAccounts;
+    
+                await account.getClientAccount(contact).then(async (data) => {
+    
+                    let clientNumber;
+    
+                    
+                    data.forEach(el => {
+                        clientNumber = el["account"]
+                    })
+    
+                    // call function to get account numbers
+    
+                    await account.clientsProducts(clientNumber).then(async resAccounts => {
+    
+                        activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
+    
+                            if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
+                                return true
+                            }
+                            return false
+                        })
+    
+    
+                        activeAccounts = activeAccounts.filter((acc) => {
+    
+                            if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
+                                return true
+                            }
+                            return false
+    
+                        })
+    
+    
+                        // display accounts to the customer
+    
+                        response = "Select Acc No -:-<br><br>";
+    
+                        let count = 0
+                        let accountBalance = 0
+                        let tempAccounts = []
+    
+                        await activeAccounts.forEach(el => {
+    
+                            if (el["accountBalance"] === undefined) {
+                                accountBalance = 0
+                            } else {
+                                accountBalance = el["accountBalance"]
+                            }
+    
+                            count = count + 1
+                            response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>E" + accountBalance + "<br>"
+    
+                            //save available accounts
+                            tempAccounts.push({ "accountNo": el["accountNo"], row: count })
+    
+                        });
+    
+                        //save in database the new data
+                        tempAccounts.forEach(async el => {
+                            //callfunction to save into database the list of accounts
+                            await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
+    
+                        });
+    
+                        //response += "<br>Enter Amount.<br>";
+                        response += "<br>00. Back<br>";
+                        response += "0. Exit";
+    
+                        closeOropenSession = 1
+    
+                    }).catch(err => {
+                        console.log(err)
+                    })
+                })
+    
+                */
+
+                var activeAccounts;
+                let mulaMatureacc;
+
+                await account.getClientAccount(contact).then(async (data) => {
+
+                    let clientNumber;
+
+                    data.forEach(el => {
+                        clientNumber = el["account"]
                     })
 
-                    let percent = (8 / 100)
-                    let interestPosted = parseFloat(((totalAmount) * ((1 + (percent / 360)) ** 30)).toFixed(2)) - totalAmount
+                    // call function to get account numbers
 
-                    // calcu;late loan amount
+                    await account.clientsProducts(clientNumber).then(async resAccounts => {
 
-                    let amountThatWeCanBorrow = quickLoan.calculateQuickLoanAmount(interestPosted)
+                        activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
 
-                    //check balance of mula 
-                    await account.clientsProducts(customerCfi).then(dt => {
-
-                        let savings = dt.data.savingsAccounts
-
-                        savings = savings.filter(el => {
-
-                            if ((el["status"]["value"] === "Active") && (el["productName"] === "Mula Account")) {
+                            if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
                                 return true
                             }
                             return false
                         })
 
-                        savings.forEach(ss => {
 
-                            mulaAccountNo = ss["accountNo"]
+                        activeAccounts = activeAccounts.filter((acc) => {
+
+                            if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
+                                return true
+                            }
+                            return false
 
                         })
 
-                    })
+                        //CHECK IF MATURED TO STOP ACCOUNT 
 
+                        var MaturedAccounts = activeAccounts.filter((matured) => {
 
-                    await quickLoan.saveQuickLoan(contact, sessionId, mulaAccountNo, amountThatWeCanBorrow).then(async dt => {
+                            if (matured.productName === "Mula Account") {
+                                return true;
+                            }
+                            return false
+                        })
 
-                        if (dt["affectedRows"] === 1) {
+                        await MaturedAccounts.forEach(accM => {
 
-                            let newDate = time.getTime().slice(0, 10)
+                            mulaMatureacc = accM.accountNo
+                            //mulaMatureacc
+                        })
+                        // await customer.maturedAcc()
 
-                            await quickLoan.createQuickLoanCharge(mulaAccountNo, amountThatWeCanBorrow.toFixed(2), time.myDate(newDate)).then(async st => {
+                        await customer.maturedAcc(mulaMatureacc).then(async res => {
 
-                                if (st.status === 200) {
+                            mulaMatureacc = res.length
 
-                                    //////////////////////////////////////////
-                                    await quickLoan.payCharge(mulaAccountNo, st["data"]["resourceId"], amountThatWeCanBorrow.toFixed(2), time.myDate(newDate)).then(async payed => {
+                        })
 
-                                        if (payed.status === 200) {
+                        // display accounts to the customer
 
-                                            //generate an uxxd 
-                                            await disbursementHeader.token().then(async neWtoken => {
+                        response = "Select Acc No -:-<br>";
 
-                                                let token = neWtoken.data["access_token"]
+                        if (mulaMatureacc === 0) {
 
-                                                // check if customer has enough money in his savings acccount
+                            let count = 0
+                            let accountBalance = 0
+                            let tempAccounts = []
 
-                                                //create uxxID
-                                                uuID = uuid.v4();
+                            await activeAccounts.forEach(el => {
 
-                                                await disbursment.requestToTransfer(uuID, token, amountThatWeCanBorrow.toFixed(2), "268" + contact).then(async payRes => {
-
-                                                    //check status
-                                                    if (payRes["status"] === 202) {
-
-                                                        //save request to pay details
-                                                        await disbursment.saveDisbursmentRequest(token, uuID, amountThatWeCanBorrow.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber)
-
-                                                        response = "SCBS -:-<br>"
-                                                        response += "Quick Loan Approved"
-                                                        closeOropenSession = 0
-
-                                                    } else {
-
-                                                        response = "Failed To Allocate Quick Loan."
-                                                        closeOropenSession = 0
-                                                    }
-
-                                                }).catch((err) => {
-
-                                                    console.log(err.message)
-
-                                                })
-                                            })
-                                        }
-                                    })
+                                if (el["accountBalance"] === undefined) {
+                                    accountBalance = 0
+                                } else {
+                                    accountBalance = el["accountBalance"]
                                 }
-                            })
+
+                                count = count + 1
+                                response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + ""
+                                //response += "<br> Balance E" + accountBalance + "<br>"
+                                response += "<br>E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br>"
+
+                                //save available accounts
+                                tempAccounts.push({ "accountNo": el["accountNo"], row: count })
+
+                            });
+
+                            //save in database the new data
+                            tempAccounts.forEach(async el => {
+                                //callfunction to save into database the list of accounts
+                                await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
+
+                            });
+
+                            //response += "<br>Enter Amount.<br>";
+                            response += "<br>00. Back<br>";
+                            response += "0. Exit";
+
+                            closeOropenSession = 1
 
                         } else {
 
                             response = "SCBS -:-<br>"
-                            response += "Failed To Allocate You A Quick Loan"
+                            //response += "Service not available at the moment."
+                            response += "Your account is currently not allowed to transact."
+                            response += "<br><br>00. Back<br>";
+                            response += "0. Exit";
+
                             closeOropenSession = 0
+
                         }
+
+                    }).catch(err => {
+                        console.log(err)
                     })
                 })
-            })
 
-        }
+            }
 
-
-        //quick loan section
-        if ((text === "2*3")) {
-
-            let contact = phoneNumber.slice(3)
-            let customerCfi;
-
-            //check if this month loan is active
-            await quickLoan.getQuickLoan(contact).then(async dt => {
-
-                if (dt.length === 0) {
-
-                    // get customer details
-                    await account.getClientAccount(contact).then(async (data) => {
-
-                        let totalAmount = 0
-
-                        data.forEach(el => {
-                            customerCfi = el["account"]
-                        })
-
-                        await account.clientsProducts(customerCfi).then(dt => {
-
-                            let savings = dt.data.savingsAccounts
-
-                            savings = savings.filter(el => {
-
-                                if ((el["status"]["value"] === "Active") && (el["productName"].slice(0, 13) === "Fixed Deposit")) {
-                                    return true
-                                }
-                                return false
-                            })
-
-                            //calculate how much money is paid to a client montly
-
-                            //let minPay = parseFloat(((this.investment) * ((1 + (percent / 360)) ** 28)).toFixed(2)) - this.investment
-                            savings.forEach(el => {
-
-                                totalAmount += parseFloat(el["accountBalance"])
-                            })
-
-                            let percent = (8 / 100)
-                            let interestPosted = parseFloat(((totalAmount) * ((1 + (percent / 360)) ** 30)).toFixed(2)) - totalAmount
-
-                            // calcu;late loan amount
-
-                            let amountThatWeCanBorrow = quickLoan.calculateQuickLoanAmount(interestPosted)
-
-                            response = "SCBS -:-<br>"
-                            response += "Borrow up to "
-                            response += "E" + amountThatWeCanBorrow.toFixed(2)
-
-                            response += "<br>1. Accept Amount"
-                            response += "<br>2. Other Amount"
-
-                            response += "<br><br>00. Back<br>0. Exit";
-                            closeOropenSession = 1
+            if (text === "2*1*1" || text === "2*1*2") {
 
 
-                        })
+                response = "SCBS -:- Transfer For<br><br>"
+                response += "1. Self<br>"
+                response += "2. Another MoMo Account"
+
+
+                response += "<br><br>00 Back"
+                response += "<br>0 Exit"
+                closeOropenSession = 1;
+
+            }
+
+
+            // Enter amount to send to disbursememt
+
+            if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) !== "2")) {
+
+                response = "SCBS -:- Enter Amount To Transfer<br><br>"
+
+                response += "00. Back<br>";
+                response += "0. Exit";
+
+                closeOropenSession = 1
+
+            }
+
+            if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) === "2") && (text.slice(0, 3) !== "2*2")) {
+
+
+                response = "SCBS -:- Enter MoMo Account <br><br>"
+                response += "00. Back<br>";
+                response += "0. Exit";
+                closeOropenSession = 1;
+
+            }
+
+            // Prompt Enter amount to transfer
+            if ((text.length === 16) && (text.indexOf('2*1*') !== -1)) {
+
+                let transferContact = text.slice(8, 16)
+                let numberStatus
+                let numberToken
+                //check if number is registred with mtn
+                await token.token().then(async (data) => {
+
+                    numberToken = data.data
+
+                    //get a token then use it to make request
+                    await collections.momoStatus(numberToken["access_token"], "268" + transferContact).then(status => {
+
+                        numberStatus = status.data["result"]
+
+                    }).catch(err => {
+                        console.log(err.message)
+                    })
+
+                }).catch((err) => {
+                    console.log(err.message)
+                })
+
+                if (numberStatus === true) {
+
+                    //
+
+                    await collections.momoAccDetails(numberToken["access_token"], "268" + transferContact).then(data => {
+
+                        response = "Confirm MoMo Acc Details<br>"
+                        response += transferContact
+                        response += "<br>" + data.data["given_name"] + "<br>" + data.data["family_name"]
+
+                        response += ".<br><br>"
+                        response += "1. YES<br>"
+
+                        response += "<br>00. Back<br>";
+                        response += "0. Exit";
+                        closeOropenSession = 1;
 
                     })
 
                 } else {
 
-                    // get     
-
-                    let pendingAmount = 0
-                    let mulaAccountBalance = 0
-                    let mulaAccountNo = 0
-
-
-                    await account.getClientAccount(contact).then(async (data) => {
-
-                        data.forEach(el => {
-                            customerCfi = el["account"]
-                        })
-
-                        //check balance of mula 
-                        await account.clientsProducts(customerCfi).then(dt => {
-
-                            let savings = dt.data.savingsAccounts
-
-                            savings = savings.filter(el => {
-
-                                if ((el["status"]["value"] === "Active") && (el["productName"] === "Mula Account")) {
-                                    return true
-                                }
-                                return false
-                            })
-
-                            savings.forEach(ss => {
-                                mulaAccountNo = ss["accountNo"]
-                            })
-                        })
-                    })
-
-                    dt.forEach(el => {
-                        pendingAmount = el["borrowedAmount"]
-
-                    })
-
-                    //check Mula account balance
-                    await account.getAccountSavingsAccountBalance(mulaAccountNo).then(accBalance => {
-
-                        mulaAccountBalance = accBalance["data"]["summary"]["accountBalance"]
-
-                    })
-
-                    response = "SCBS -:-<br>"
-                    response += "Your Quick Loan<br>"
-                    response += "E" + pendingAmount
-                    response += "<br><br>Account Details<br>"
-                    response += mulaAccountNo
-                    response += "<br>E " + mulaAccountBalance
-                    response += "<br><br>00. Back<br>0. Exit";
-                    closeOropenSession = 1
+                    response = "Number has no Mtn MoMo"
+                    response += "<br><br>00. Back<br>";
+                    response += "0. Exit";
+                    closeOropenSession = 1;
 
                 }
-            })
-        }
 
 
-        // utilities
-        if (text === "3") {
 
-            response = "SCBS -:-<br>"
-            response += "1. EWSC"
 
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        if (text === "3*1") {
-
-            response = "SCBS -:-<br>"
-            response += "Coming Soon"
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        //prepaid 
-        if (text === "4") {
-
-            response = "SCBS -:-<br>"
-            response += "1. Airtime<br>"
-            response += "2. Bundles <br>"
-            response += "3. Electricity"
-
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        if (text === "4*1") {
-
-            response = "SCBS -:-<br>"
-            response += "Coming Soon"
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-
-        if (text === "4*2") {
-
-            response = "SCBS -:-<br>"
-            response += "Coming Soon"
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        if (text === "4*3") {
-
-            response = "SCBS -:-<br>"
-            response += "Coming Soon"
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        // gives customer a menu of a change of password
-        if (text == "5") {
-
-            response = "SCBS -:-<br>"
-            response += "1. My Profile<br>"
-            response += "2. Change Password"
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        // enter new password and update password in the datanase
-        if ((text == "5*2")) {
-
-            response = "SCBS -:-<br>"
-            response += "You are about to change your password."
-            response += "<br>Enter New password"
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-        }
-
-        //display client info
-        if (text == "5*1") {
-
-
-            let contact = phoneNumber.slice(3)
-            // get customer details
-            await account.getClientAccount(contact).then(async (data) => {
-
-                let clientNumber;
-
-                data.forEach(el => {
-                    clientNumber = el["account"]
-                })
-
-                // call function to display customer info
-
-                response = "My Profile -:-<br>"
-
-                await customer.getClientDetails(clientNumber).then(dt => {
-
-                    // return birthdate
-
-                    let newDate = time.birthDate(dt.data.dateOfBirth[0], dt.data.dateOfBirth[1], dt.data.dateOfBirth[2])
-
-
-                    response += dt.data.displayName + "<br>"
-                    response += "D.O.B  " + newDate + "<br>"
-                    response += dt.data.mobileNo + "<br>"
-                    response += dt.data.emailAddress
-                })
-
-            }).catch(errr => {
-
-                console.log(errr.message)
-
-            })
-
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-
-            closeOropenSession = 1
-
-        }
-
-        // change passwords
-
-        if ((text.indexOf('5*2*') !== -1)) {
-
-            //first check the number of characters from the strings
-            let newPass = text.slice(4)
-            let phone = phoneNumber.slice(3)
-
-            //check if input is a six digit value
-
-            if (text.slice(4).length !== 6) {
-
-                response = "SCBS -:-<br>Password must have 6 charecters."
-                closeOropenSession = 0
-
-            } else {
-
-                // update database with new password
-
-                await customer.changePassword(phone, newPass).then((data) => {
-
-                    if (data["affectedRows"] === 1) {
-
-                        response = "SCBS -:-<br> Password Changed Successfully."
-
-                    } else {
-
-                        response = "SCBS -:-<br> Failed To Change Password."
-                    }
-                })
-
-                closeOropenSession = 0;
 
             }
 
-        }
+            // sending money to a third party user
+            if (((text.indexOf('2*1*') !== -1)) && (text.length === 18)) {
+
+                response = "SCBS -:- Enter Amount To Transfer"
+
+                response += "<br><br>00. Back<br>";
+                response += "0. Exit";
+                closeOropenSession = 1
+
+            }
 
 
-        if (text === "2*1") { // get money from savings account to mobile money
+            // Send momo to another number
 
-            /*
-            var activeAccounts;
+            if ((text.indexOf('2*1*') !== -1) && (text.length >= 20)) {
 
-            await account.getClientAccount(contact).then(async (data) => {
+                closeOropenSession = 0
 
-                let clientNumber;
+                let amount = text.slice(19)
 
-                
-                data.forEach(el => {
-                    clientNumber = el["account"]
+                let thirdPartyContact = "268" + text.slice(8, 16)
+
+                let accountNo
+                let accountBalanceMusoni = 0
+                let productName = ""
+
+                let row = text[4]  //getting a row
+                let input = text.slice(0, 3)
+
+                //get saved inputes to retrieve account to send to
+
+                await account.getSelectedAccount(input, sessionId, row).then(dt => {
+
+                    dt.forEach(el => {
+                        accountNo = el["accountNo"]
+                    })
                 })
 
-                // call function to get account numbers
 
-                await account.clientsProducts(clientNumber).then(async resAccounts => {
+                await account.getAccountSavingsAccountBalance(accountNo).then(el => {
 
-                    activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
-
-                        if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
-                            return true
-                        }
-                        return false
-                    })
-
-
-                    activeAccounts = activeAccounts.filter((acc) => {
-
-                        if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
-                            return true
-                        }
-                        return false
-
-                    })
-
-
-                    // display accounts to the customer
-
-                    response = "Select Acc No -:-<br><br>";
-
-                    let count = 0
-                    let accountBalance = 0
-                    let tempAccounts = []
-
-                    await activeAccounts.forEach(el => {
-
-                        if (el["accountBalance"] === undefined) {
-                            accountBalance = 0
-                        } else {
-                            accountBalance = el["accountBalance"]
-                        }
-
-                        count = count + 1
-                        response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>E" + accountBalance + "<br>"
-
-                        //save available accounts
-                        tempAccounts.push({ "accountNo": el["accountNo"], row: count })
-
-                    });
-
-                    //save in database the new data
-                    tempAccounts.forEach(async el => {
-                        //callfunction to save into database the list of accounts
-                        await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
-
-                    });
-
-                    //response += "<br>Enter Amount.<br>";
-                    response += "<br>00. Back<br>";
-                    response += "0. Exit";
-
-                    closeOropenSession = 1
+                    accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
+                    productName = el["data"]["savingsProductName"]
 
                 }).catch(err => {
-                    console.log(err)
-                })
-            })
 
-            */
+                    console.log(err.message)
 
-            var activeAccounts;
-            let mulaMatureacc;
-
-            await account.getClientAccount(contact).then(async (data) => {
-
-                let clientNumber;
-
-                data.forEach(el => {
-                    clientNumber = el["account"]
                 })
 
-                // call function to get account numbers
+                // check if account has enough amount to perform task
 
-                await account.clientsProducts(clientNumber).then(async resAccounts => {
+                // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
 
-                    activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
+                // accountBalanceMusoni < amount
 
-                        if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
-                            return true
-                        }
-                        return false
+                let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
+
+                if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
+
+                    response = "SCBS -:-<br><br>You have insufficient funds."
+
+                    closeOropenSession = 0;
+
+                } else {
+
+                    //generate an uxxd 
+                    await disbursementHeader.token().then(async neWtoken => {
+
+                        let token = neWtoken.data["access_token"]
+
+                        // check if customer has enough money in his savings acccount
+
+                        //create uxxID
+                        uuID = uuid.v4();
+
+                        await disbursment.requestToTransfer(uuID, token, amount, thirdPartyContact).then(async payRes => {
+
+                            //check status
+                            if (payRes["status"] === 202) {
+
+                                //save request to pay details
+                                await disbursment.saveDisbursmentRequest(token, uuID, amount, thirdPartyContact, accountNo, phoneNumber)
+                                // phoneNumber is a contact 
+
+
+                                response = "Transfer Has Been Made."
+                                closeOropenSession = 0
+
+                            } else {
+
+                                response = "Failed To Make Transfer."
+                                closeOropenSession = 0
+                            }
+
+                        }).catch((err) => {
+
+                            console.log(err.message)
+
+                        })
+                    })
+                } // end of transfer functions 
+
+            }
+
+            //after amount was entered  // disbursement panel
+
+            if ((text.indexOf('2*1*') !== -1) && (text.length > 9) && (text.indexOf("2*2") === -1) && (text.slice(6) !== "1") && (text.length < 16) && (text.slice(5, 7) !== "*2")) {
+
+
+                closeOropenSession = 0
+
+                let amount = text.slice(8)
+
+                let accountNo
+                let accountBalanceMusoni = 0
+                let productName = ""
+
+                let row = text[4]  //getting a row
+                let input = text.slice(0, 3)
+
+                //get saved inputes to retrieve account to send to
+
+                await account.getSelectedAccount(input, sessionId, row).then(dt => {
+
+                    dt.forEach(el => {
+                        accountNo = el["accountNo"]
+                    })
+                })
+
+
+                await account.getAccountSavingsAccountBalance(accountNo).then(el => {
+
+                    accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
+                    productName = el["data"]["savingsProductName"]
+
+                }).catch(err => {
+
+                    console.log(err.message)
+
+                })
+
+                // check if account has enough amount to perform task
+
+                // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
+
+                // accountBalanceMusoni < amount
+
+                let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
+
+                if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
+
+                    response = "SCBS -:-<br>You have insufficient funds."
+
+                    closeOropenSession = 0;
+
+                } else {
+
+                    //generate an uxxd 
+                    await disbursementHeader.token().then(async neWtoken => {
+
+                        let token = neWtoken.data["access_token"]
+
+                        // check if customer has enough money in his savings acccount
+
+                        //create uxxID
+                        uuID = uuid.v4();
+
+                        await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(async payRes => {
+
+                            //check status
+                            if (payRes["status"] === 202) {
+
+                                //save request to pay details
+                                await disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo, "12345678")
+
+                                response = "Transfer Has Been Made."
+                                closeOropenSession = 0
+
+                            } else {
+
+                                response = "Failed To Make Transfer."
+                                closeOropenSession = 0
+                            }
+
+                        }).catch((err) => {
+
+                            // console.log(err.message)
+
+                        })
+                    })
+                } // end of transfer functions 
+
+
+            }
+
+
+            if (text === "2*2") {  // from momo account to savings account
+
+
+                var activeAccounts;
+
+                await account.getClientAccount(contact).then(async (data) => {
+
+                    let clientNumber;
+
+                    data.forEach(el => {
+                        clientNumber = el["account"]
                     })
 
+                    // call function to get account numbers
 
-                    activeAccounts = activeAccounts.filter((acc) => {
+                    await account.clientsProducts(clientNumber).then(resAccounts => {
 
-                        if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
-                            return true
-                        }
-                        return false
+                        activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
 
-                    })
+                            if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
+                                return true
+                            }
+                            return false
+                        })
 
-                    //CHECK IF MATURED TO STOP ACCOUNT 
+                        // filter accounts that are needed
 
-                    var MaturedAccounts = activeAccounts.filter((matured) => {
+                        activeAccounts = activeAccounts.filter((acc) => {
 
-                        if (matured.productName === "Mula Account") {
-                            return true;
-                        }
-                        return false
-                    })
+                            if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
+                                return true
+                            }
 
-                    await MaturedAccounts.forEach(accM => {
+                            return false
 
-                        mulaMatureacc = accM.accountNo
-                        //mulaMatureacc
-                    })
-                    // await customer.maturedAcc()
+                        })
 
-                    await customer.maturedAcc(mulaMatureacc).then(async res => {
+                        // display accounts to the customer
 
-                        mulaMatureacc = res.length
+                        response = "SCBS -:- Select Acc<br>";
 
-                    })
-
-                    // display accounts to the customer
-
-                    response = "Select Acc No -:-<br>";
-
-                    if (mulaMatureacc === 0) {
-
-                        let count = 0
                         let accountBalance = 0
+                        let count = 0
+
                         let tempAccounts = []
 
-                        await activeAccounts.forEach(el => {
+                        activeAccounts.forEach(el => {
 
                             if (el["accountBalance"] === undefined) {
                                 accountBalance = 0
@@ -985,514 +1379,130 @@ router.get('/', async (req, res) => {
                             }
 
                             count = count + 1
-                            response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + ""
-                            //response += "<br> Balance E" + accountBalance + "<br>"
-                            response += "<br>E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br>"
+                            response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>E" + accountBalance + "<br>";
 
-                            //save available accounts
+                            // save accounts that can be used to make a transfer
                             tempAccounts.push({ "accountNo": el["accountNo"], row: count })
 
                         });
 
-                        //save in database the new data
+
                         tempAccounts.forEach(async el => {
                             //callfunction to save into database the list of accounts
+
                             await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
 
                         });
 
-                        //response += "<br>Enter Amount.<br>";
+
+
+                        //response += "<br>Enter Acc No.<br><br>";
                         response += "<br>00. Back<br>";
                         response += "0. Exit";
 
                         closeOropenSession = 1
 
-                    } else {
-
-                        response = "SCBS -:-<br>"
-                        //response += "Service not available at the moment."
-                        response += "Your account is currently not allowed to transact."
-                        response += "<br><br>00. Back<br>";
-                        response += "0. Exit";
-
-                        closeOropenSession = 0
-
-                    }
-
-                }).catch(err => {
-                    console.log(err)
+                    }).catch(err => {
+                        console.log(err)
+                    })
                 })
-            })
-
-        }
-
-        if (text === "2*1*1" || text === "2*1*2") {
+            }
 
 
-            response = "SCBS -:- Transfer For<br><br>"
-            response += "1. Self<br>"
-            response += "2. Another MoMo Account"
+            //transfer money in mobile money
+            if ((text.indexOf('2*2*') !== -1) && (text.length === 5)) {
 
+                response = "Enter Amount To Transfer -:-<br>"
 
-            response += "<br><br>00 Back"
-            response += "<br>0 Exit"
-            closeOropenSession = 1;
+                response += "<br>00. Back";
+                response += "<br>0. Exit";
 
-        }
-
-
-        // Enter amount to send to disbursememt
-
-        if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) !== "2")) {
-
-            response = "SCBS -:- Enter Amount To Transfer<br><br>"
-
-            response += "00. Back<br>";
-            response += "0. Exit";
-
-            closeOropenSession = 1
-
-        }
-
-        if ((text.indexOf('2*1*') !== -1) && (text.length === 7) && (text.slice(6) === "2") && (text.slice(0, 3) !== "2*2")) {
-
-
-            response = "SCBS -:- Enter MoMo Account <br><br>"
-            response += "00. Back<br>";
-            response += "0. Exit";
-            closeOropenSession = 1;
-
-        }
-
-        // Prompt Enter amount to transfer
-        if ((text.length === 16) && (text.indexOf('2*1*') !== -1)) {
-
-            let transferContact = text.slice(8, 16)
-            let numberStatus
-            let numberToken
-            //check if number is registred with mtn
-            await token.token().then(async (data) => {
-
-                numberToken = data.data
-
-                //get a token then use it to make request
-                await collections.momoStatus(numberToken["access_token"], "268" + transferContact).then(status => {
-
-                    numberStatus = status.data["result"]
-
-                }).catch(err => {
-                    console.log(err.message)
-                })
-
-            }).catch((err) => {
-                console.log(err.message)
-            })
-
-            if (numberStatus === true) {
-
-                //
-
-                await collections.momoAccDetails(numberToken["access_token"], "268" + transferContact).then(data => {
-
-                    console.log(data.data)
-
-                    response = "Confirm MoMo Acc Details<br>"
-                    response += transferContact
-                    response += "<br>" + data.data["given_name"] + "<br>" + data.data["family_name"]
-
-                    response += ".<br><br>"
-                    response += "1. YES<br>"
-
-                    response += "<br>00. Back<br>";
-                    response += "0. Exit";
-                    closeOropenSession = 1;
-
-                })
-
-            } else {
-
-                response = "Number has no Mtn MoMo"
-                response += "<br><br>00. Back<br>";
-                response += "0. Exit";
-                closeOropenSession = 1;
+                closeOropenSession = 1
 
             }
 
 
+            //transfer amount entered to make the transfer
+            if ((text.slice(0, 4) === "2*2*") && (text.length > 5) && (text.length < 16)) {
+
+                //CALL FUNCTION TO MAKE A TRANSFER FROM MOMO TO MY SAVINGS
 
 
+                let accountNo
+                let amount = text.slice(6)
 
-        }
+                //get row and input 
+                let input = text.slice(0, 3)
+                let row = text[4]
 
-        // sending money to a third party user
-        if (((text.indexOf('2*1*') !== -1)) && (text.length === 18)) {
+                //get account that was selected
+                await account.getSelectedAccount(input, sessionId, row).then((dt) => {
 
-            response = "SCBS -:- Enter Amount"
+                    // get account number that was selected
+                    dt.forEach(el => {
 
-            response += "<br>00. Back<br>";
-            response += "0. Exit";
-            closeOropenSession = 1
+                        accountNo = el["accountNo"]
 
-        }
+                    })
 
-
-        // Send momo to another number
-
-        if ((text.indexOf('2*1*') !== -1) && (text.length >= 20)) {
-
-            closeOropenSession = 0
-
-            let amount = text.slice(19)
-
-            let thirdPartyContact = "268" + text.slice(8, 16)
-
-            let accountNo
-            let accountBalanceMusoni = 0
-            let productName = ""
-
-            let row = text[4]  //getting a row
-            let input = text.slice(0, 3)
-
-            //get saved inputes to retrieve account to send to
-
-            await account.getSelectedAccount(input, sessionId, row).then(dt => {
-
-                dt.forEach(el => {
-                    accountNo = el["accountNo"]
                 })
-            })
+
+                //deposit to this account
+                uuID = uuid.v4();
 
 
-            await account.getAccountSavingsAccountBalance(accountNo).then(el => {
+                await token.token().then(async (data) => {
 
-                accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
-                productName = el["data"]["savingsProductName"]
+                    let token = data.data
 
-            }).catch(err => {
+                    //get a token then use it to make request
 
-                console.log(err.message)
-
-            })
-
-            // check if account has enough amount to perform task
-
-            // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
-
-            // accountBalanceMusoni < amount
-
-            let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
-
-            if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
-
-                response = "SCBS -:-<br><br>You have insufficient funds."
-
-                closeOropenSession = 0;
-
-            } else {
-
-                //generate an uxxd 
-                await disbursementHeader.token().then(async neWtoken => {
-
-                    let token = neWtoken.data["access_token"]
-
-                    // check if customer has enough money in his savings acccount
-
-                    //create uxxID
-                    uuID = uuid.v4();
-
-                    await disbursment.requestToTransfer(uuID, token, amount, thirdPartyContact).then(async payRes => {
-
-                        //check status
-                        if (payRes["status"] === 202) {
-
-                            //save request to pay details
-                            await disbursment.saveDisbursmentRequest(token, uuID, amount, thirdPartyContact, accountNo, phoneNumber)
-                            // phoneNumber is a contact 
+                    await collections.requestToPay(uuID, token["access_token"], amount, phoneNumber).then(async (data) => {
 
 
-                            response = "Transfer Has Been Made."
-                            closeOropenSession = 0
 
-                        } else {
+                        if (data["status"] !== undefined) {
 
-                            response = "Failed To Make Transfer."
-                            closeOropenSession = 0
+                            if (data["status"] === 202) {
+
+                                //response = "Please make an approvals"
+
+                                // store in database
+
+                                await collections.saveRequestTransaction(token["access_token"], uuID, amount, phoneNumber, accountNo).then(async (dt) => {
+
+                                    if (dt["affectedRows"] === 1) {
+
+                                        response = "SCBS -:- <br>Please make an approval from your MoMo account."
+                                        closeOropenSession = 0
+
+                                    } else {
+
+                                        response = "SCBS -:-<br>Failed to make transfer."
+                                        closeOropenSession = 0
+
+                                    }
+
+
+                                }).catch(err => {
+
+                                    console.log(err.message)
+
+                                })
+
+                            } else {
+
+                                response = "SCBS -:- Failed to make transfer. Please check if you have enough money."
+                                closeOropenSession = 0
+                            }
                         }
+
 
                     }).catch((err) => {
 
-                        console.log(err.message)
+                        console.log(err)
 
                     })
-                })
-            } // end of transfer functions 
-
-        }
-
-        //after amount was entered  // disbursement panel
-
-        if ((text.indexOf('2*1*') !== -1) && (text.length > 9) && (text.indexOf("2*2") === -1) && (text.slice(6) !== "1") && (text.length < 16) && (text.slice(5, 7) !== "*2")) {
-
-
-            closeOropenSession = 0
-
-            let amount = text.slice(8)
-
-            let accountNo
-            let accountBalanceMusoni = 0
-            let productName = ""
-
-            let row = text[4]  //getting a row
-            let input = text.slice(0, 3)
-
-            //get saved inputes to retrieve account to send to
-
-            await account.getSelectedAccount(input, sessionId, row).then(dt => {
-
-                dt.forEach(el => {
-                    accountNo = el["accountNo"]
-                })
-            })
-
-
-            await account.getAccountSavingsAccountBalance(accountNo).then(el => {
-
-                accountBalanceMusoni = el["data"]["summary"]["accountBalance"]
-                productName = el["data"]["savingsProductName"]
-
-            }).catch(err => {
-
-                console.log(err.message)
-
-            })
-
-            // check if account has enough amount to perform task
-
-            // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
-
-            // accountBalanceMusoni < amount
-
-            let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
-
-            if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
-
-                response = "SCBS -:-<br>You have insufficient funds."
-
-                closeOropenSession = 0;
-
-            } else {
-
-                //generate an uxxd 
-                await disbursementHeader.token().then(async neWtoken => {
-
-                    let token = neWtoken.data["access_token"]
-
-                    // check if customer has enough money in his savings acccount
-
-                    //create uxxID
-                    uuID = uuid.v4();
-
-                    await disbursment.requestToTransfer(uuID, token, amount, phoneNumber).then(async payRes => {
-
-                        //check status
-                        if (payRes["status"] === 202) {
-
-                            //save request to pay details
-                            await disbursment.saveDisbursmentRequest(token, uuID, amount, phoneNumber, accountNo, "12345678")
-
-                            response = "Transfer Has Been Made."
-                            closeOropenSession = 0
-
-                        } else {
-
-                            response = "Failed To Make Transfer."
-                            closeOropenSession = 0
-                        }
-
-                    }).catch((err) => {
-
-                        // console.log(err.message)
-
-                    })
-                })
-            } // end of transfer functions 
-
-
-        }
-
-
-        if (text === "2*2") {  // from momo account to savings account
-
-
-            var activeAccounts;
-
-            await account.getClientAccount(contact).then(async (data) => {
-
-                let clientNumber;
-
-                data.forEach(el => {
-                    clientNumber = el["account"]
-                })
-
-                // call function to get account numbers
-
-                await account.clientsProducts(clientNumber).then(resAccounts => {
-
-                    activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
-
-                        if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
-                            return true
-                        }
-                        return false
-                    })
-
-                    // filter accounts that are needed
-
-                    activeAccounts = activeAccounts.filter((acc) => {
-
-                        if (acc.productName === 'Mula Account' || acc.productName === 'Bronze Savings' || acc.productName === 'SIlver Savings' || acc.productName === 'Golden Savings' || acc.productName === 'Subscription shares') {
-                            return true
-                        }
-
-                        return false
-
-                    })
-
-                    // display accounts to the customer
-
-                    response = "SCBS -:- Select Acc<br>";
-
-                    let accountBalance = 0
-                    let count = 0
-
-                    let tempAccounts = []
-
-                    activeAccounts.forEach(el => {
-
-                        if (el["accountBalance"] === undefined) {
-                            accountBalance = 0
-                        } else {
-                            accountBalance = el["accountBalance"]
-                        }
-
-                        count = count + 1
-                        response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>E" + accountBalance + "<br>";
-
-                        // save accounts that can be used to make a transfer
-                        tempAccounts.push({ "accountNo": el["accountNo"], row: count })
-
-                    });
-
-
-                    tempAccounts.forEach(async el => {
-                        //callfunction to save into database the list of accounts
-
-                        await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"])
-
-                    });
-
-
-
-                    //response += "<br>Enter Acc No.<br><br>";
-                    response += "<br>00. Back<br>";
-                    response += "0. Exit";
-
-                    closeOropenSession = 1
-
-                }).catch(err => {
-                    console.log(err)
-                })
-            })
-        }
-
-
-        //transfer money in mobile money
-        if ((text.indexOf('2*2*') !== -1) && (text.length === 5)) {
-
-            response = "Enter Amount To Transfer -:-<br>"
-
-            response += "<br>00. Back";
-            response += "<br>0. Exit";
-
-            closeOropenSession = 1
-
-        }
-
-
-        //transfer amount entered to make the transfer
-        if ((text.slice(0, 4) === "2*2*") && (text.length > 5) && (text.length < 16)) {
-
-            //CALL FUNCTION TO MAKE A TRANSFER FROM MOMO TO MY SAVINGS
-
-
-            let accountNo
-            let amount = text.slice(6)
-
-            //get row and input 
-            let input = text.slice(0, 3)
-            let row = text[4]
-
-            //get account that was selected
-            await account.getSelectedAccount(input, sessionId, row).then((dt) => {
-
-                // get account number that was selected
-                dt.forEach(el => {
-
-                    accountNo = el["accountNo"]
-
-                })
-
-            })
-
-            //deposit to this account
-            uuID = uuid.v4();
-
-
-            await token.token().then(async (data) => {
-
-                let token = data.data
-
-                //get a token then use it to make request
-
-                await collections.requestToPay(uuID, token["access_token"], amount, phoneNumber).then(async (data) => {
-
-
-
-                    if (data["status"] !== undefined) {
-
-                        if (data["status"] === 202) {
-
-                            //response = "Please make an approvals"
-
-                            // store in database
-
-                            await collections.saveRequestTransaction(token["access_token"], uuID, amount, phoneNumber, accountNo).then(async (dt) => {
-
-                                if (dt["affectedRows"] === 1) {
-
-                                    response = "SCBS -:- <br>Please make an approval from your MoMo account."
-                                    closeOropenSession = 0
-
-                                } else {
-
-                                    response = "SCBS -:-<br>Failed to make transfer."
-                                    closeOropenSession = 0
-
-                                }
-
-
-                            }).catch(err => {
-
-                                console.log(err.message)
-
-                            })
-
-                        } else {
-
-                            response = "SCBS -:- Failed to make transfer. Please check if you have enough money."
-                            closeOropenSession = 0
-                        }
-                    }
 
 
                 }).catch((err) => {
@@ -1501,229 +1511,237 @@ router.get('/', async (req, res) => {
 
                 })
 
+            }
 
-            }).catch((err) => {
+            if (text === "1") {   //// if 1 from menu is selected
 
-                console.log(err)
+                // get client products
 
-            })
+                var activeAccounts;
+                var loansAcc = []
 
-        }
+                await account.getClientAccount(contact).then(async (data) => {
 
-        if (text === "1") {   //// if 1 from menu is selected
+                    let clientNumber; // customer CFI
 
-            // get client products
-
-            var activeAccounts;
-            var loansAcc = []
-
-            await account.getClientAccount(contact).then(async (data) => {
-
-                let clientNumber; // customer CFI
-
-                data.forEach(el => {
-                    clientNumber = el["account"]
-                })
-
-                //get account numbers
-
-                await account.clientsProducts(clientNumber).then(resAccounts => {
-
-                    activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
-
-                        if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
-                            return true
-                        }
-                        return false
+                    data.forEach(el => {
+                        clientNumber = el["account"]
                     })
 
-                    if (resAccounts.data.loanAccounts !== undefined) {
+                    //get account numbers
 
-                        //loanAccounts
-                        loansAcc = resAccounts.data.loanAccounts.filter((loan) => {
+                    await account.clientsProducts(clientNumber).then(resAccounts => {
 
-                            if ((loan.status.value === "Active") || (loan.status.value === "Restructured")) {
+                        activeAccounts = resAccounts.data.savingsAccounts.filter((acc) => {
+
+                            if ((acc.status.value === 'Active') && (!(acc.productName === 'Perm Suspense Account')) && (!(acc.productName === 'FP Saving Account'))) {
                                 return true
                             }
                             return false
                         })
 
-                    }
-                    // display accounts to the customer
+                        if (resAccounts.data.loanAccounts !== undefined) {
 
-                    response = "My Accounts -:-<br>";
-                    response += "Savings<br>"
-                    let tempAccounts = []
-                    let count = 0
+                            //loanAccounts
+                            loansAcc = resAccounts.data.loanAccounts.filter((loan) => {
 
-                    activeAccounts.forEach(el => {
+                                if ((loan.status.value === "Active") || (loan.status.value === "Restructured")) {
+                                    return true
+                                }
+                                return false
+                            })
 
-                        count = count + 1
-                        response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>"
+                        }
+                        // display accounts to the customer
 
-                        tempAccounts.push({ "accountNo": el["accountNo"], row: count, isLoan: 0 })
+                        response = "My Accounts -:-<br>";
+                        response += "Savings<br>"
+                        let tempAccounts = []
+                        let count = 0
 
-                    });
-
-                    if (resAccounts.data.loanAccounts !== undefined) {
-
-                        response += "<br>Loans<br>"
-
-                        loansAcc.forEach(el => {
+                        activeAccounts.forEach(el => {
 
                             count = count + 1
-
                             response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>"
 
-                            tempAccounts.push({ "accountNo": el["accountNo"], row: count, isLoan: 1 })
+                            tempAccounts.push({ "accountNo": el["accountNo"], row: count, isLoan: 0 })
 
-                        })
-                    }
+                        });
 
-                    // we need to store 
-                    tempAccounts.forEach(async el => {
-                        //callfunction to save into database the list of accounts
+                        if (resAccounts.data.loanAccounts !== undefined) {
 
-                        await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"], el["isLoan"])
+                            response += "<br>Loans<br>"
 
-                    });
+                            loansAcc.forEach(el => {
+
+                                count = count + 1
+
+                                response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>"
+
+                                tempAccounts.push({ "accountNo": el["accountNo"], row: count, isLoan: 1 })
+
+                            })
+                        }
+
+                        // we need to store 
+                        tempAccounts.forEach(async el => {
+                            //callfunction to save into database the list of accounts
+
+                            await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"], el["isLoan"])
+
+                        });
 
 
 
 
-                }).catch(err => {
-                    console.log(err)
+                    }).catch(err => {
+                        console.log(err)
+                    })
+
+                    response += "<br>Select Acc No ";
+                    response += "<br><br>00. Back";
+                    response += "<br>0. Exit";
+
+                    closeOropenSession = 1
+
                 })
 
-                response += "<br>Select Acc No ";
-                response += "<br><br>00. Back";
-                response += "<br>0. Exit";
+
+            }
+
+            if ((text.indexOf('1*') !== -1) && (text.length === 3)) {  // view account deatails
+
+                try {
+
+                    let totaldeposists = 0
+                    let totalFeeCharge = 0
+                    let totalWithdrawals = 0
+                    let totalInterestPosted = 0
+
+                    //get account number from database that was selected
+
+                    let preSelected = text[0]
+                    let row = text[2]
+
+                    let isLoan = 0
+
+                    let accountFound
+
+                    await account.getSelectedAccount(preSelected, sessionId, row).then(dt => {
+
+                        dt.forEach(el => {
+
+                            accountFound = el["accountNo"]
+                            isLoan = el["isLoan"]
+
+                        })
+
+                    })
+
+                    if (isLoan === 1) {
+
+                        await loans.prePayment(accountFound).then(dat => {
+
+                            response = "My Loan Details -:-<br><br>"
+                            response += "Loan Amount: E " + dat.data["summary"]["principalDisbursed"]
+                            response += "<br>Arreas Amount: E " + dat.data["summary"]["totalOverdue"]
+                            response += "<br>Current Balance: E " + dat.data["foreClosureData"]["totalForeClosureAmount"]
+                            response += "<br>Total Outstanding: E " + dat.data["summary"]["totalOutstanding"]
+
+                            response += "<br><br>00. Back<br>"
+                            response += "0. Exit";
+
+                            closeOropenSession = 1
+
+                        })
+
+                    }
+
+                    if (isLoan === 0) {
+
+                        await account.accountDetails(accountFound).then(data => {
+
+                            //totalWithdrawals = data.data.summary.totalWithdrawals
+
+                            totaldeposists = +data.data.summary.totalDeposits || 0
+                            totalFeeCharge = +data.data.summary.totalFeeCharge || 0
+                            totalWithdrawals = +data.data.summary.totalWithdrawals || 0
+                            totalInterestPosted = +data.data.summary.totalInterestPosted || 0
+
+                            if (data.data["savingsProductName"].indexOf("Fixed Period Shares") >= 0) {
+                                this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge)).toFixed(2)
+                            } else {
+                                this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge) - (totalWithdrawals)).toFixed(2)
+                            }
+
+                            //this.accountBalance = (+(response["summary"]["accountBalance"]) + +(response["summary"]["totalInterestPosted"]) - +(response["summary"]["totalWithdrawals"])).toFixed(2)
+
+                            this.totaldeposists = data.data["summary"]["totalDeposits"]
+                            this.totalCharge = data.data["summary"]["totalFeeCharge"]
+                            this.totalInterestPosted = data.data["summary"]["totalInterestPosted"]
+                            this.interest = data.data["nominalAnnualInterestRate"]
+
+
+                            if (this.totaldeposists === undefined) {
+                                this.totaldeposists = 0
+                            }
+
+                            if (this.totalWithdrawals === undefined) {
+                                this.totalWithdrawals = 0
+                            }
+
+                            if (this.totalInterestPosted === undefined) {
+                                this.totalInterestPosted = 0
+                            }
+
+                            if (this.accountBalance === undefined) {
+                                this.accountBalance = 0
+                            }
+
+                            response = "SCBS -:- My Account Info<br><br>"//<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
+                            //response += "Interest: E " + this.totalInterestPosted + "<br>"
+                            response += "Balance E " + this.accountBalance + "<br><br>"
+                            response += "00. Back<br>"
+                            response += "0. Exit";
+
+                            closeOropenSession = 1
+                        })
+
+                    }//end of a savings account info
+
+
+                } catch (err) {
+                    console.log(err.message)
+                }
+            }
+
+
+            //need a way to dertemine if we are closing the or the request is still open
+
+            if ((response === "NULL") && (logged === 1)) {
+
+                response = "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
+
+                await customer.updateInputSession(phoneNumber.slice(3), sessionId, dbText.slice(0, 11)).then(dtt => {
+                    //console.log(dtt)
+                })
 
                 closeOropenSession = 1
 
-            })
-
-
-        }
-
-        if ((text.indexOf('1*') !== -1) && (text.length === 3)) {  // view account deatails
-
-            try {
-
-                let totaldeposists = 0
-                let totalFeeCharge = 0
-                let totalWithdrawals = 0
-                let totalInterestPosted = 0
-
-                //get account number from database that was selected
-
-                let preSelected = text[0]
-                let row = text[2]
-
-                let isLoan = 0
-
-                let accountFound
-
-                await account.getSelectedAccount(preSelected, sessionId, row).then(dt => {
-
-                    dt.forEach(el => {
-
-                        accountFound = el["accountNo"]
-                        isLoan = el["isLoan"]
-
-                    })
-
-                })
-
-                if (isLoan === 1) {
-
-                    await loans.prePayment(accountFound).then(dat => {
-
-                        response = "My Loan Details -:-<br><br>"
-                        response += "Loan Amount: E " + dat.data["summary"]["principalDisbursed"]
-                        response += "<br>Arreas Amount: E " + dat.data["summary"]["totalOverdue"]
-                        response += "<br>Current Balance: E " + dat.data["foreClosureData"]["totalForeClosureAmount"]
-                        response += "<br>Total Outstanding: E " + dat.data["summary"]["totalOutstanding"]
-
-                        response += "<br><br>00. Back<br>"
-                        response += "0. Exit";
-
-                        closeOropenSession = 1
-
-                    })
-
-                }
-
-                if (isLoan === 0) {
-
-                    await account.accountDetails(accountFound).then(data => {
-
-                        //totalWithdrawals = data.data.summary.totalWithdrawals
-
-                        totaldeposists = +data.data.summary.totalDeposits || 0
-                        totalFeeCharge = +data.data.summary.totalFeeCharge || 0
-                        totalWithdrawals = +data.data.summary.totalWithdrawals || 0
-                        totalInterestPosted = +data.data.summary.totalInterestPosted || 0
-
-                        if (data.data["savingsProductName"].indexOf("Fixed Period Shares") >= 0) {
-                            this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge)).toFixed(2)
-                        } else {
-                            this.accountBalance = ((totaldeposists) + (totalInterestPosted) - (totalFeeCharge) - (totalWithdrawals)).toFixed(2)
-                        }
-
-                        //this.accountBalance = (+(response["summary"]["accountBalance"]) + +(response["summary"]["totalInterestPosted"]) - +(response["summary"]["totalWithdrawals"])).toFixed(2)
-
-                        this.totaldeposists = data.data["summary"]["totalDeposits"]
-                        this.totalCharge = data.data["summary"]["totalFeeCharge"]
-                        this.totalInterestPosted = data.data["summary"]["totalInterestPosted"]
-                        this.interest = data.data["nominalAnnualInterestRate"]
-
-
-                        if (this.totaldeposists === undefined) {
-                            this.totaldeposists = 0
-                        }
-
-                        if (this.totalWithdrawals === undefined) {
-                            this.totalWithdrawals = 0
-                        }
-
-                        if (this.totalInterestPosted === undefined) {
-                            this.totalInterestPosted = 0
-                        }
-
-                        if (this.accountBalance === undefined) {
-                            this.accountBalance = 0
-                        }
-
-                        response = "SCBS -:-<br><br> My Account Info<br>"//<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
-                        //response += "Interest: E " + this.totalInterestPosted + "<br>"
-                        response += "Balance E " + this.accountBalance + "<br><br>"
-                        response += "00. Back<br>"
-                        response += "0. Exit";
-
-                        closeOropenSession = 1
-                    })
-
-                }//end of a savings account info
-
-
-            } catch (err) {
-                console.log(err.message)
             }
         }
 
+        console.log(logged)
+        console.log(response)
 
-        //need a way to dertemine if we are closing the or the request is still open
+        if ((response === "NULL") && (logged === 0)) {
 
-        if (response === "NULL") {
+            //update status of being locked
+            await customer.updateFailedLogins(contact)
 
-            response = "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
-
-            await customer.updateInputSession(phoneNumber.slice(3), sessionId, dbText.slice(0, 11)).then(dtt => {
-                //console.log(dtt)
-            })
-
-            closeOropenSession = 1
+            // get loggin attempts
+            response = `SCBS -:- Failed to login, after 3 attempts you will be locked out.`;
+            closeOropenSession = 0
 
         }
 
