@@ -1183,7 +1183,13 @@ router.get('/', async (req, res) => {
 
                 // accountBalanceMusoni < amount
 
+                console.log("Are we in the right place")
+
                 let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
+
+                totalCharged = parseFloat(totalCharged + 0.95)
+
+                // 0.95 is sms amount
 
                 if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
@@ -1277,10 +1283,15 @@ router.get('/', async (req, res) => {
 
                 let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
 
+                totalCharged = parseFloat(totalCharged + 0.95)
+
+                //0.95 is sms charge
+
+                console.log(totalCharged)
+
                 if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
-                    response = "SCBS -:-<br>You have insufficient funds."
-
+                    response = "SCBS -:-<br><br>You have insufficient funds."
                     closeOropenSession = 0;
 
                 } else {
@@ -1730,9 +1741,6 @@ router.get('/', async (req, res) => {
 
             }
         }
-
-        console.log(logged)
-        console.log(response)
 
         if ((response === "NULL") && (logged === 0)) {
 

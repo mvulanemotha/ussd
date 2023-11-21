@@ -273,7 +273,7 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
     if (productName === "Mula Account") {
 
         availableBalance = accountBalance - withdrawnAmount
-
+        
         if (availableBalance >= 0) {
             return true
         } else {
