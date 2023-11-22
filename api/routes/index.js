@@ -989,10 +989,16 @@ router.get('/', async (req, res) => {
                                     accountBalance = el["accountBalance"]
                                 }
 
+                                let newAccountBalance = (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2)
+
+                                if (newAccountBalance <= 0) {
+                                    newAccountBalance = 0.00
+                                }
+
                                 count = count + 1
                                 response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + ""
                                 //response += "<br> Balance E" + accountBalance + "<br>"
-                                response += "<br>E" + (parseFloat(accountBalance) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2) + "<br>"
+                                response += "<br>E" + newAccountBalance + "<br>"
 
                                 //save available accounts
                                 tempAccounts.push({ "accountNo": el["accountNo"], row: count })
@@ -1182,8 +1188,6 @@ router.get('/', async (req, res) => {
                 // also check after applying a charge the remaining balance should be greate than the minimum amount of available amount in an account
 
                 // accountBalanceMusoni < amount
-
-                console.log("Are we in the right place")
 
                 let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat((amount))
 
