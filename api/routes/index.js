@@ -1290,9 +1290,7 @@ router.get('/', async (req, res) => {
                 totalCharged = parseFloat(totalCharged + 0.95)
 
                 //0.95 is sms charge
-
-                console.log(totalCharged)
-
+                
                 if ((!(disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)))) {
 
                     response = "SCBS -:-<br><br>You have insufficient funds."
@@ -1962,7 +1960,7 @@ setInterval(async () => {
 
         //get saved disbursement details
         await disbursment.getTransferStatus().then(async data => {
-
+            
 
             if (data.length > 0) {
 
