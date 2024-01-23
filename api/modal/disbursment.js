@@ -203,11 +203,13 @@ let disbursememtCharge = (amount) => {
 
 // check if minimum amount is left on the account
 let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
+
   let availableBalance = 0.0;
 
   if (productName === "Bronze Savings") {
+
     availableBalance = accountBalance - withdrawnAmount;
-    console.log(availableBalance);
+
     if (availableBalance >= 300) {
       return true;
     } else {
@@ -216,6 +218,7 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
   }
 
   if (productName === "Silver Savings") {
+
     availableBalance = accountBalance - withdrawnAmount;
 
     if (availableBalance >= 500) {
@@ -225,7 +228,8 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
     }
   }
 
-  if (productName === "Golden savings") {
+  if (productName === "Golden Savings") {
+
     availableBalance = accountBalance - withdrawnAmount;
 
     if (availableBalance >= 1000) {
@@ -236,6 +240,7 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
   }
 
   if (productName === "Mula Account") {
+    
     availableBalance = accountBalance - withdrawnAmount;
 
     if (availableBalance >= 0) {

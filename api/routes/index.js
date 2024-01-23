@@ -1161,24 +1161,20 @@ router.get("/", async (req, res) => {
 
           // accountBalanceMusoni < amount
 
-          let totalCharged =
-            parseFloat(disbursment.disbursememtCharge(amount)) +
-            parseFloat(amount);
+          let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat(amount);
 
           totalCharged = parseFloat(totalCharged + 0.95);
+  
+          console.log(totalCharged)
 
           // 0.95 is sms amount
 
-          if (
-            !disbursment.canWithDraw(
-              productName,
-              totalCharged,
-              accountBalanceMusoni
-            )
+          if (!disbursment.canWithDraw(productName,totalCharged,accountBalanceMusoni)
           ) {
             response = "SCBS -:-<br><br>You have insufficient funds.";
 
             closeOropenSession = 0;
+
           } else {
             //generate an uxxd
             await disbursementHeader.token().then(async (neWtoken) => {
@@ -1276,17 +1272,15 @@ router.get("/", async (req, res) => {
 
           totalCharged = parseFloat(totalCharged + 0.95);
 
+          console.log(totalCharged)
+          console.log(accountBalanceMusoni)
           //0.95 is sms charge
 
-          if (
-            !disbursment.canWithDraw(
-              productName,
-              totalCharged,
-              accountBalanceMusoni
-            )
-          ) {
+          if (!disbursment.canWithDraw(productName,totalCharged,accountBalanceMusoni)) {
+
             response = "SCBS -:-<br><br>You have insufficient funds.";
             closeOropenSession = 0;
+
           } else {
             //generate an uxxd
             await disbursementHeader.token().then(async (neWtoken) => {
