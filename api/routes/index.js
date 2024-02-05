@@ -33,7 +33,7 @@ router.get("/", async (req, res) => {
     if (newrequest === "1") {
       await customer
         .addNewsession(phoneNumber.slice(3), text, sessionId)
-        .then((dt) => {});
+        .then((dt) => { });
     } else if (newrequest === "0") {
       // get phone session details
       await customer
@@ -1164,12 +1164,14 @@ router.get("/", async (req, res) => {
           let totalCharged = parseFloat(disbursment.disbursememtCharge(amount)) + parseFloat(amount);
 
           totalCharged = parseFloat(totalCharged + 0.95);
-  
-          console.log(totalCharged)
+
+          console.log(totalCharged + "CHECKING")
+
+
 
           // 0.95 is sms amount
 
-          if (!disbursment.canWithDraw(productName,totalCharged,accountBalanceMusoni)
+          if (!disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)
           ) {
             response = "SCBS -:-<br><br>You have insufficient funds.";
 
@@ -1266,17 +1268,17 @@ router.get("/", async (req, res) => {
 
           // accountBalanceMusoni < amount
 
-          let totalCharged =
-            parseFloat(disbursment.disbursememtCharge(amount)) +
-            parseFloat(amount);
+          let totalCharged = parseFloat(disbursment.disbursememtCharge(parseFloat(amount))) + parseFloat(amount);
+
+          console.log(disbursment.disbursememtCharge(parseFloat(amount)) + "MORE")
 
           totalCharged = parseFloat(totalCharged + 0.95);
 
-          console.log(totalCharged)
+          console.log(totalCharged + "CHECKING IN")
           console.log(accountBalanceMusoni)
           //0.95 is sms charge
 
-          if (!disbursment.canWithDraw(productName,totalCharged,accountBalanceMusoni)) {
+          if (!disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)) {
 
             response = "SCBS -:-<br><br>You have insufficient funds.";
             closeOropenSession = 0;

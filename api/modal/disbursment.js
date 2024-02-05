@@ -168,6 +168,7 @@ let transferStatus = async (xreference, token) => {
 
 // calculate charge
 let disbursememtCharge = (amount) => {
+
   try {
     if (amount > 4000) {
       return (1.2 / 100) * amount;
@@ -177,23 +178,23 @@ let disbursememtCharge = (amount) => {
       return 10;
     }
 
-    if (amount > 250 && amount < 500) {
+    if (amount > 250 && amount <= 500) {
       return 15;
     }
 
-    if (amount > 500 && amount < 750) {
+    if (amount > 500 && amount <= 750) {
       return 17;
     }
 
-    if (amount > 750 && amount < 1200) {
+    if (amount > 750 && amount <= 1200) {
       return 22;
     }
 
-    if (amount > 1200 && amount < 2200) {
+    if (amount > 1200 && amount <= 2200) {
       return 32;
     }
 
-    if (amount > 2200 && amount < 4000) {
+    if (amount > 2200 && amount <= 4000) {
       return 48;
     }
   } catch (error) {
@@ -203,6 +204,10 @@ let disbursememtCharge = (amount) => {
 
 // check if minimum amount is left on the account
 let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
+
+  console.log(withdrawnAmount + "Testing")
+
+  withdrawnAmount = parseFloat(withdrawnAmount)
 
   let availableBalance = 0.0;
 
@@ -240,7 +245,7 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
   }
 
   if (productName === "Mula Account") {
-    
+
     availableBalance = accountBalance - withdrawnAmount;
 
     if (availableBalance >= 0) {
