@@ -183,6 +183,7 @@ let disbursememtCharge = (amount) => {
     }
 
     if (amount > 500 && amount <= 750) {
+
       return 17;
     }
 
