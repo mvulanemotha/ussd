@@ -118,7 +118,7 @@ router.get("/", async (req, res) => {
             response = "Welcome " + customer_name + "<br>To Status Capital<br><br>Enter your 6 digit pin:";
             closeOropenSession = 1;
           } else {
-            response = `SCBS -:-<br>Please note your account has been locked.`;
+            response = `<br>YOUR ACCOUNT HAS BEEN LOCKED`;
             closeOropenSession = 0;
           }
         } else {
@@ -172,22 +172,39 @@ router.get("/", async (req, res) => {
       //auth logged in user
 
       await customer.login(contact, text).then(async (data) => {
+
         if (data.length > 0) {
           //reset loggin attempts to zero incase there was a failed login
           await customer.resetLoginAttempts(contact);
           await customer.loggedUpdate(sessionId, contact);
           //update database for succesfull login
 
-          response =
-            " Menu -:-<br>1. Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
+          response = " Menu -:-<br>1. Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
           closeOropenSession = 1;
         } else {
           //update status of being locked
-          await customer.updateFailedLogins(contact);
+          await customer.updateFailedLogins(contact).then(data => {
+            console.log(data)
+          });
 
-          // get loggin attempts
-          response = `SCBS -:- Failed to login, after 3 attempts you will be locked out.`;
-          closeOropenSession = 0;
+          let numberOfAttempts = 0
+
+          await customer.isCustomer(contact).then(data => {
+            numberOfAttempts = data[0]["attempts"]
+          })
+
+          numberOfAttempts = 3 - numberOfAttempts
+          if (numberOfAttempts != 0) {
+            // get loggin attempts
+            response = `Invalid PIN, ${numberOfAttempts} attempts remaining.`;
+            closeOropenSession = 0;
+
+          }
+
+          if (numberOfAttempts === 0) {
+            response = `<br>YOUR ACCOUNT HAS BEEN LOCKED`
+            closeOropenSession = 0
+          }
         }
       });
     }
@@ -1775,8 +1792,7 @@ router.get("/", async (req, res) => {
       //need a way to dertemine if we are closing the or the request is still open
 
       if (response === "NULL" && logged === 1) {
-        response =
-          "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
+        response = "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
 
         await customer
           .updateInputSession(
