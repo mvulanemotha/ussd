@@ -171,6 +171,35 @@ let resetLoginAttempts = async (contact) => {
 
 }
 
+// rest password 
+
+let restpass = async (contact, password) => {
+
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = 'update customers set loginattempts = 0 , password = ?  where username = ? limit 1'
+
+            db.query(query, [password, contact], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+        })
+
+    } catch (error) {
+        console.log(error.message)
+    }
+
+
+}
+
 // hangle sessions 
 
 let getSessionDeatails = async (phone, session) => {
@@ -408,4 +437,4 @@ let maturedAcc = async (accountNo) => {
 }
 
 
-module.exports = { loggedUpdate, maturedAcc, getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }
+module.exports = { restpass, loggedUpdate, maturedAcc, getClientDetails, checkNewUser, saveClientNumbers, saveCustomers, changePassword, addNewsession, getSessionDeatails, updateInputSession, registerNewUser, isCustomer, login, updateFailedLogins, resetLoginAttempts }

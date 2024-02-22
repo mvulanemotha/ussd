@@ -13,6 +13,41 @@ const sms = require("../modal/sms");
 const time = require("../modal/datetime");
 const quickLoan = require("../modal/quickloan");
 
+
+//get customers
+router.get("/customerDetails", async (req, res) => {
+
+
+  await customer.checkNewUser(req.query.phone).then(data => {
+
+    res.json(data)
+
+  })
+})
+
+//reset password
+
+router.post("/restpass", async (req, res) => {
+
+  let password = Math.floor(100000 + Math.random() * 900000);
+
+  await customer.restpass(req.body.contact, password).then(data => {
+
+    if (Object.keys(data).length > 0) {
+
+      let message = `Your new USSD password:  ${password}`
+      sms.sendMessage(req.body.contact, message)
+      res.json("successfully")
+
+    } else {
+      res.json("Failed")
+    }
+
+  })
+
+})
+
+
 //REGISTER IF NOT REGISTRED
 router.get("/", async (req, res) => {
   //var response = "SCBS -:-<br><br>Network Error.";
@@ -80,11 +115,10 @@ router.get("/", async (req, res) => {
           });
 
           if (attempts < 3) {
-            response =
-              "SCBS -:-<br>Welcome " + customer_name + "<br>Enter your pin:";
+            response = "Welcome " + customer_name + "<br>To Status Capital<br><br>Enter your 6 digit pin:";
             closeOropenSession = 1;
           } else {
-            response = `SCBS -:-<br>Please note your user account has been locked.`;
+            response = `SCBS -:-<br>Please note your account has been locked.`;
             closeOropenSession = 0;
           }
         } else {
@@ -110,8 +144,7 @@ router.get("/", async (req, res) => {
                 .then(async (saved) => {
                   if (saved["affectedRows"] === 1) {
                     //send sms to the client
-                    let message =
-                      "Please use this password on SCBS USSD " + password;
+                    let message = "Please use this password on SCBS USSD " + password;
 
                     await sms.sendMessage(contact, message);
 
@@ -125,8 +158,7 @@ router.get("/", async (req, res) => {
                   }
                 });
             } else {
-              response =
-                "Sorry, you are not registered with Status Capital. Please visit the nearest branch to get registered or Call 24171975";
+              response = "Sorry, you are not registered with Status Capital. Please visit the nearest branch to get registered or Call 24171975";
               closeOropenSession = 0;
             }
           });
@@ -147,7 +179,7 @@ router.get("/", async (req, res) => {
           //update database for succesfull login
 
           response =
-            " Menu -:-<br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
+            " Menu -:-<br>1. Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
           closeOropenSession = 1;
         } else {
           //update status of being locked
@@ -196,9 +228,9 @@ router.get("/", async (req, res) => {
           });
         });
 
-        response = "MoMo -:-<br><br>";
-        response += "Transfer<br>";
-        response += "1. From Savings<br>2. To Savings<br><br>";
+        response = "MoMo ";
+        response += "TRANSFER<br><br>";
+        response += "1. FROM SAVINGS<br>2. TO SAVINGS<br><br>";
         /*
                 if (savings.length > 0) {
                     response += "Quick Loan<br>"
@@ -837,7 +869,7 @@ router.get("/", async (req, res) => {
     
                         // display accounts to the customer
     
-                        response = "Select Acc No -:-<br><br>";
+                        response = "SELECT ACCOUNT -:-<br><br>";
     
                         let count = 0
                         let accountBalance = 0
@@ -941,7 +973,7 @@ router.get("/", async (req, res) => {
 
               // display accounts to the customer
 
-              response = "Select Acc No -:-<br>";
+              response = "SELECT ACCOUNT<br><br>";
 
               if (mulaMatureacc === 0) {
                 let count = 0;
@@ -1016,9 +1048,9 @@ router.get("/", async (req, res) => {
       }
 
       if (text === "2*1*1" || text === "2*1*2") {
-        response = "SCBS -:- Transfer For<br><br>";
-        response += "1. Self<br>";
-        response += "2. Another MoMo Account";
+        response = "TRANSFER FOR<br><br>";
+        response += "1. SELF<br>";
+        response += "2. ANOTHER MoMo ACC";
 
         response += "<br><br>00 Back";
         response += "<br>0 Exit";
@@ -1032,7 +1064,7 @@ router.get("/", async (req, res) => {
         text.length === 7 &&
         text.slice(6) !== "2"
       ) {
-        response = "SCBS -:- Enter Amount To Transfer<br><br>";
+        response = "ENTER AMOUNT<br><br>";
 
         response += "00. Back<br>";
         response += "0. Exit";
@@ -1046,7 +1078,7 @@ router.get("/", async (req, res) => {
         text.slice(6) === "2" &&
         text.slice(0, 3) !== "2*2"
       ) {
-        response = "SCBS -:- Enter MoMo Account <br><br>";
+        response = "ENTER MoMo ACCOUNT <br><br>";
         response += "00. Back<br>";
         response += "0. Exit";
         closeOropenSession = 1;
@@ -1086,7 +1118,7 @@ router.get("/", async (req, res) => {
               "268" + transferContact
             )
             .then((data) => {
-              response = "Confirm MoMo Acc Details<br>";
+              response = "CONFIRM MoMo ACCOUNT<br>";
               response += transferContact;
               response +=
                 "<br>" +
@@ -1111,7 +1143,7 @@ router.get("/", async (req, res) => {
 
       // sending money to a third party user
       if (text.indexOf("2*1*") !== -1 && text.length === 18) {
-        response = "SCBS -:- Enter Amount To Transfer";
+        response = "ENTER AMOUNT";
 
         response += "<br><br>00. Back<br>";
         response += "0. Exit";
@@ -1274,8 +1306,6 @@ router.get("/", async (req, res) => {
 
           totalCharged = parseFloat(totalCharged + 0.95);
 
-          console.log(totalCharged + "CHECKING IN")
-          console.log(accountBalanceMusoni)
           //0.95 is sms charge
 
           if (!disbursment.canWithDraw(productName, totalCharged, accountBalanceMusoni)) {
@@ -1375,7 +1405,7 @@ router.get("/", async (req, res) => {
 
               // display accounts to the customer
 
-              response = "SCBS -:- Select Acc<br>";
+              response = "SELECT ACCOUNT<br>";
 
               let accountBalance = 0;
               let count = 0;
@@ -1559,8 +1589,8 @@ router.get("/", async (req, res) => {
               }
               // display accounts to the customer
 
-              response = "My Accounts -:-<br>";
-              response += "Savings<br>";
+              //response = "Accounts -:-<br>";
+              response = "SAVINGS<br>";
               let tempAccounts = [];
               let count = 0;
 
@@ -1582,7 +1612,7 @@ router.get("/", async (req, res) => {
               });
 
               if (resAccounts.data.loanAccounts !== undefined) {
-                response += "<br>Loans<br>";
+                response += "<br>LOANS<br>";
 
                 loansAcc.forEach((el) => {
                   count = count + 1;
@@ -1620,7 +1650,7 @@ router.get("/", async (req, res) => {
               console.log(err);
             });
 
-          response += "<br>Select Acc No ";
+          response += "<br>SELECT ACCOUNT ";
           response += "<br><br>00. Back";
           response += "<br>0. Exit";
 
@@ -1657,7 +1687,7 @@ router.get("/", async (req, res) => {
 
           if (isLoan === 1) {
             await loans.prePayment(accountFound).then((dat) => {
-              response = "My Loan Details -:-<br><br>";
+              response = "LOAN DETAILS<br><br>";
               response +=
                 "Loan Amount: E " + dat.data["summary"]["principalDisbursed"];
               response +=
@@ -1728,9 +1758,9 @@ router.get("/", async (req, res) => {
                 this.accountBalance = 0;
               }
 
-              response = "SCBS -:- My Account Info<br><br>"; //<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
+              response = "ACCOUNT DETAILS<br><br>"; //<br>Deposits: E" + this.totaldeposists + "<br>" //Withdrawals: E" + this.totalWithdrawals + "<br>"
               //response += "Interest: E " + this.totalInterestPosted + "<br>"
-              response += "Balance E " + this.accountBalance + "<br><br>";
+              response += "BALANCE <br>E " + this.accountBalance + "<br><br>";
               response += "00. Back<br>";
               response += "0. Exit";
 
