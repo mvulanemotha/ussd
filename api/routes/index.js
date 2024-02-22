@@ -717,10 +717,10 @@ router.get("/", async (req, res) => {
 
       //prepaid
       if (text === "4") {
-        response = "SCBS -:-<br>";
-        response += "1. Airtime<br>";
-        response += "2. Bundles <br>";
-        response += "3. Electricity";
+        response = "RECHARGE<br><br>";
+        response += "1. AIRTIME<br>";
+        response += "2. DATA BUNDLES <br>";
+        response += "3. ELECTRICITY";
 
         response += "<br><br>00 Back";
         response += "<br>0 Exit";
@@ -757,9 +757,9 @@ router.get("/", async (req, res) => {
 
       // gives customer a menu of a change of password
       if (text == "5") {
-        response = "SCBS -:-<br>";
-        response += "1. My Profile<br>";
-        response += "2. Change Password";
+        response = "SETTINGS<br><br>";
+        response += "1. MY PROFILE<br>";
+        response += "2. CHANGE PASSWORD";
         response += "<br><br>00 Back";
         response += "<br>0 Exit";
 
@@ -768,9 +768,9 @@ router.get("/", async (req, res) => {
 
       // enter new password and update password in the datanase
       if (text == "5*2") {
-        response = "SCBS -:-<br>";
-        response += "You are about to change your password.";
-        response += "<br>Enter New password";
+        //response = "SCBS -:-<br>";
+        //response = "You are about to change your password.";
+        response = "ENTER NEW PASSWORD";
         response += "<br><br>00 Back";
         response += "<br>0 Exit";
 
@@ -792,7 +792,7 @@ router.get("/", async (req, res) => {
 
             // call function to display customer info
 
-            response = "My Profile -:-<br>";
+            response = "MY PROFILE<br><br>";
 
             await customer.getClientDetails(clientNumber).then((dt) => {
               // return birthdate
