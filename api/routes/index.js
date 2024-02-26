@@ -318,8 +318,7 @@ router.get("/", async (req, res) => {
             ) {
               response = "SCBS -:-";
               response += "<br>";
-              response +=
-                "The amount you are borrowing is greater than that you can be offered.";
+              response += "The amount you are borrowing is greater than that you can be offered.";
               response += "<br><br>00. Back<br>0. Exit";
 
               closeOropenSession = 1;
@@ -545,21 +544,13 @@ router.get("/", async (req, res) => {
                                       //check status
                                       if (payRes["status"] === 202) {
                                         //save request to pay details
-                                        await disbursment.saveDisbursmentRequest(
-                                          token,
-                                          uuID,
-                                          amountThatWeCanBorrow.toFixed(2),
-                                          "268" + contact,
-                                          mulaAccountNo,
-                                          phoneNumber
-                                        );
+                                        await disbursment.saveDisbursmentRequest(token, uuID, amountThatWeCanBorrow.toFixed(2), "268" + contact, mulaAccountNo, phoneNumber);
 
                                         response = "SCBS -:-<br>";
                                         response += "Quick Loan Approved";
                                         closeOropenSession = 0;
                                       } else {
-                                        response =
-                                          "Failed To Allocate Quick Loan.";
+                                        response = "Failed To Allocate Quick Loan.";
                                         closeOropenSession = 0;
                                       }
                                     })
@@ -1792,7 +1783,7 @@ router.get("/", async (req, res) => {
       //need a way to dertemine if we are closing the or the request is still open
 
       if (response === "NULL" && logged === 1) {
-        response = "Wrong Input Field Entered:<br>Menu -:- <br>1. My Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
+        response = "Wrong Input Field Entered -:-<br>Menu -:- <br>1. Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
 
         await customer
           .updateInputSession(
