@@ -951,7 +951,7 @@ router.get("/", async (req, res) => {
                 if (
                   acc.productName === "Mula Account" ||
                   acc.productName === "Bronze Savings" ||
-                  acc.productName === "SIlver Savings" ||
+                  acc.productName === "Silver Savings" ||
                   acc.productName === "Golden Savings" ||
                   acc.productName === "Subscription shares"
                 ) {
@@ -1401,7 +1401,7 @@ router.get("/", async (req, res) => {
                 if (
                   acc.productName === "Mula Account" ||
                   acc.productName === "Bronze Savings" ||
-                  acc.productName === "SIlver Savings" ||
+                  acc.productName === "Silver Savings" ||
                   acc.productName === "Golden Savings" ||
                   acc.productName === "Subscription shares"
                 ) {
