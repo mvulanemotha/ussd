@@ -35,7 +35,7 @@ router.post("/restpass", async (req, res) => {
 
     if (Object.keys(data).length > 0) {
 
-      let message = `Your new USSD password:  ${password}`
+      let message = `Your New USSD password:  ${password}`
       sms.sendMessage(req.body.contact, message)
       res.json("successfully")
 
