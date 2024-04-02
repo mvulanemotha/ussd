@@ -249,7 +249,7 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
 
     availableBalance = accountBalance - withdrawnAmount;
 
-    if (availableBalance >= 0) {
+    if (availableBalance >= 50) {
       return true;
     } else {
       return false;
