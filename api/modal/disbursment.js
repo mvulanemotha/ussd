@@ -206,7 +206,8 @@ let disbursememtCharge = (amount) => {
 // check if minimum amount is left on the account
 let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
 
-  console.log(withdrawnAmount + "Testing")
+  console.log(productName + "CHECKING")
+  console.log(accountBalance + "Account Balance")
 
   withdrawnAmount = parseFloat(withdrawnAmount)
 
