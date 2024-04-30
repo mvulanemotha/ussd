@@ -206,9 +206,6 @@ let disbursememtCharge = (amount) => {
 // check if minimum amount is left on the account
 let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
 
-  console.log(productName + "CHECKING")
-  console.log(accountBalance + "Account Balance")
-
   withdrawnAmount = parseFloat(withdrawnAmount)
 
   let availableBalance = 0.0;
@@ -257,6 +254,34 @@ let canWithDraw = (productName, withdrawnAmount, accountBalance) => {
     }
   }
 };
+
+let minimuBalance = (productName) => {
+
+  try {
+
+    if (productName === "Bronze Savings") {
+      return 300
+    }
+
+    if (productName === "Silver Savings") {
+      return 500
+    }
+
+    if (productName === "Golden Savings") {
+      return 1000
+    }
+
+    if (productName === "Mula Account") {
+      return 50
+    }
+
+    return 0.00
+
+  } catch (error) {
+    console.log(error.message)
+  }
+
+}
 
 let payMoMoCharge = async (clientAccount, amount, date) => {
   try {
@@ -336,4 +361,5 @@ module.exports = {
   updateTransferRequest,
   getTransferStatus,
   transferStatus,
+  minimuBalance
 };
