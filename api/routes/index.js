@@ -928,9 +928,9 @@ router.get("/", async (req, res) => {
 
                 let newAccountBalance = (parseFloat(accountBalance) - (parseFloat(disbursment.minimuBalance(el["productName"]))) - (parseFloat(disbursment.disbursememtCharge(parseFloat(accountBalance))) + 0.95)).toFixed(2);
 
-                /* if (newAccountBalance <= 0) {
-                   newAccountBalance = 0.0;
-                 } */
+                if (newAccountBalance <= 0) {
+                  newAccountBalance = 0.0;
+                }
 
                 count = count + 1;
                 response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "";
