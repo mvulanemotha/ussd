@@ -6,10 +6,12 @@ dotenv.config();
 let headersMusoni = () => {
 
   //let apiKey = 'uUUnYBrEJ48mp2JoM8Jni7yIf8JDRP1N7mZvUTmO' 
-  let apiKey = 'G1ApOPzYok3CnSupBeBMfRMXEFxHVMT5DaFc5854'
-  let username = 'Status Capital API'
-  let password = 'Status12345'
+  let apiKey = process.env.apiKey //'G1ApOPzYok3CnSupBeBMfRMXEFxHVMT5DaFc5854'
+  let username = process.env.User  //'Status Capital API'
+  let password = process.env.Password // 'Status12345'
 
+  /* User = 'Status Capital API'
+  Password = 'Status12345' */
 
   let musonCredentials = username + ':' + password
 
