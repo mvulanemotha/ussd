@@ -1,24 +1,16 @@
+const dotenv = require('dotenv');
+
+dotenv.config();
+
 const mysql = require('mysql');
-/*
-const database = mysql.createPool({
-    connectionLimit: 10,
-    password: 'Mvulane2@@',
-    user: 'SCBS',
-    database: 'scbs_ussd',
-    host: 'localhost',
-    port: '3306',
-    timezone: 'SAST',
-    dateStrings: true,
-});
-*/
 
 const database = mysql.createPool({
     connectionLimit: 50,
-    password: 'Mvulane2@@',
-    user: 'SCBS',
-    database: 'scbs_ussd',
-    host: 'localhost',
-    port: '3306',
+    password: process.env.passwordDB,
+    user: process.env.usernameDB,
+    database: process.env.databaseDB,
+    host: process.env.hostDB,
+    port: process.env.portDB,
     timezone: 'SAST',
     dateStrings: true,
     pool: {

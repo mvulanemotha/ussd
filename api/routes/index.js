@@ -17,7 +17,6 @@ const quickLoan = require("../modal/quickloan");
 //get customers
 router.get("/customerDetails", async (req, res) => {
 
-
   await customer.checkNewUser(req.query.phone).then(data => {
 
     res.json(data)
@@ -349,6 +348,7 @@ router.get("/", async (req, res) => {
                 .then(async (dt) => {
                   if (dt["affectedRows"] === 1) {
                     let newDate = time.getTime().slice(0, 10);
+                    //time.myDate(newDate)
 
                     await quickLoan.createQuickLoanCharge(mulaAccountNo, amountBorrowed.toFixed(2), time.myDate(newDate)).then(async (st) => {
 
@@ -708,34 +708,33 @@ router.get("/", async (req, res) => {
       if (text == "5*1") {
         let contact = phoneNumber.slice(3);
         // get customer details
-        await account
-          .getClientAccount(contact)
-          .then(async (data) => {
-            let clientNumber;
+        await account.getClientAccount(contact).then(async (data) => {
 
-            data.forEach((el) => {
-              clientNumber = el["account"];
-            });
+          let clientNumber;
 
-            // call function to display customer info
+          data.forEach((el) => {
+            clientNumber = el["account"];
+          });
 
-            response = "MY PROFILE<br><br>";
+          // call function to display customer info
 
-            await customer.getClientDetails(clientNumber).then((dt) => {
-              // return birthdate
+          response = "MY PROFILE<br><br>";
 
-              let newDate = time.birthDate(
-                dt.data.dateOfBirth[0],
-                dt.data.dateOfBirth[1],
-                dt.data.dateOfBirth[2]
-              );
+          await customer.getClientDetails(clientNumber).then((dt) => {
+            // return birthdate
 
-              response += dt.data.displayName + "<br>";
-              response += "D.O.B  " + newDate + "<br>";
-              response += dt.data.mobileNo + "<br>";
-              response += dt.data.emailAddress;
-            });
-          })
+            let newDate = time.birthDate(
+              dt.data.dateOfBirth[0],
+              dt.data.dateOfBirth[1],
+              dt.data.dateOfBirth[2]
+            );
+
+            response += dt.data.displayName + "<br>";
+            response += "D.O.B  " + newDate + "<br>";
+            response += dt.data.mobileNo + "<br>";
+            response += dt.data.emailAddress;
+          });
+        })
           .catch((errr) => {
             console.log(errr.message);
           });
@@ -1152,14 +1151,8 @@ router.get("/", async (req, res) => {
 
       //after amount was entered  // disbursement panel
 
-      if (
-        text.indexOf("2*1*") !== -1 &&
-        text.length > 9 &&
-        text.indexOf("2*2") === -1 &&
-        text.slice(6) !== "1" &&
-        text.length < 16 &&
-        text.slice(5, 7) !== "*2"
-      ) {
+      if (text.indexOf("2*1*") !== -1 && text.length > 9 && text.indexOf("2*2") === -1 && text.slice(6) !== "1" && text.length < 16 && text.slice(5, 7) !== "*2") {
+
         closeOropenSession = 0;
 
         let amount = text.slice(8);
@@ -1422,10 +1415,8 @@ router.get("/", async (req, res) => {
             if (resAccounts.data.loanAccounts !== undefined) {
               //loanAccounts
               loansAcc = resAccounts.data.loanAccounts.filter((loan) => {
-                if (
-                  loan.status.value === "Active" ||
-                  loan.status.value === "Restructured"
-                ) {
+
+                if (loan.status.value === "Active" || loan.status.value === "Restructured") {
                   return true;
                 }
                 return false;
@@ -1440,13 +1431,7 @@ router.get("/", async (req, res) => {
 
             activeAccounts.forEach((el) => {
               count = count + 1;
-              response +=
-                count +
-                ". " +
-                el["shortProductName"] +
-                "  " +
-                el["accountNo"] +
-                "<br>";
+              response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>";
 
               tempAccounts.push({
                 accountNo: el["accountNo"],
@@ -1461,13 +1446,7 @@ router.get("/", async (req, res) => {
               loansAcc.forEach((el) => {
                 count = count + 1;
 
-                response +=
-                  count +
-                  ". " +
-                  el["shortProductName"] +
-                  "  " +
-                  el["accountNo"] +
-                  "<br>";
+                response += count + ". " + el["shortProductName"] + "  " + el["accountNo"] + "<br>";
 
                 tempAccounts.push({
                   accountNo: el["accountNo"],
@@ -1481,18 +1460,11 @@ router.get("/", async (req, res) => {
             tempAccounts.forEach(async (el) => {
               //callfunction to save into database the list of accounts
 
-              await account.storeSelectedAccount(
-                sessionId,
-                el["accountNo"],
-                text,
-                el["row"],
-                el["isLoan"]
-              );
+              await account.storeSelectedAccount(sessionId, el["accountNo"], text, el["row"], el["isLoan"]);
             });
-          })
-            .catch((err) => {
-              console.log(err);
-            });
+          }).catch((err) => {
+            console.log(err);
+          });
 
           response += "<br>SELECT ACCOUNT ";
           response += "<br><br>00. Back";
@@ -1520,14 +1492,12 @@ router.get("/", async (req, res) => {
 
           let accountFound;
 
-          await account
-            .getSelectedAccount(preSelected, sessionId, row)
-            .then((dt) => {
-              dt.forEach((el) => {
-                accountFound = el["accountNo"];
-                isLoan = el["isLoan"];
-              });
+          await account.getSelectedAccount(preSelected, sessionId, row).then((dt) => {
+            dt.forEach((el) => {
+              accountFound = el["accountNo"];
+              isLoan = el["isLoan"];
             });
+          });
 
           if (isLoan === 1) {
             await loans.prePayment(accountFound).then((dat) => {
@@ -1559,31 +1529,17 @@ router.get("/", async (req, res) => {
               totalWithdrawals = +data.data.summary.totalWithdrawals || 0;
               totalInterestPosted = +data.data.summary.totalInterestPosted || 0;
 
-              if (
-                data.data["savingsProductName"].indexOf(
-                  "Fixed Period Shares"
-                ) >= 0
-              ) {
-                this.accountBalance = (
-                  totaldeposists +
-                  totalInterestPosted -
-                  totalFeeCharge
-                ).toFixed(2);
+              if (data.data["savingsProductName"].indexOf("Fixed Period Shares") >= 0) {
+                this.accountBalance = (totaldeposists + totalInterestPosted - totalFeeCharge).toFixed(2);
               } else {
-                this.accountBalance = (
-                  totaldeposists +
-                  totalInterestPosted -
-                  totalFeeCharge -
-                  totalWithdrawals
-                ).toFixed(2);
+                this.accountBalance = (totaldeposists + totalInterestPosted - totalFeeCharge - totalWithdrawals).toFixed(2);
               }
 
               //this.accountBalance = (+(response["summary"]["accountBalance"]) + +(response["summary"]["totalInterestPosted"]) - +(response["summary"]["totalWithdrawals"])).toFixed(2)
 
               this.totaldeposists = data.data["summary"]["totalDeposits"];
               this.totalCharge = data.data["summary"]["totalFeeCharge"];
-              this.totalInterestPosted =
-                data.data["summary"]["totalInterestPosted"];
+              this.totalInterestPosted = data.data["summary"]["totalInterestPosted"];
               this.interest = data.data["nominalAnnualInterestRate"];
 
               if (this.totaldeposists === undefined) {
@@ -1621,15 +1577,9 @@ router.get("/", async (req, res) => {
       if (response === "NULL" && logged === 1) {
         response = "Wrong Input Field Entered.<br>Menu -:- <br>1. Accounts<br>2. MoMo <br>3. Utilities <br>4. Prepaid   <br>5. Settings <br><br>0. Exit";
 
-        await customer
-          .updateInputSession(
-            phoneNumber.slice(3),
-            sessionId,
-            dbText.slice(0, 11)
-          )
-          .then((dtt) => {
-            //console.log(dtt)
-          });
+        await customer.updateInputSession(phoneNumber.slice(3), sessionId, dbText.slice(0, 11)).then((dtt) => {
+          //console.log(dtt)
+        });
 
         closeOropenSession = 1;
       }
@@ -1663,6 +1613,9 @@ router.get("/", async (req, res) => {
   }
 });
 
+// 
+
+
 //save ussd customers
 router.post("/", async (req, res) => {
   // save a new client
@@ -1681,23 +1634,18 @@ router.post("/", async (req, res) => {
 router.get("/checkmomoappnumber", async (req, res) => {
   let number = "268" + req.query.number;
 
-  await token
-    .token()
-    .then(async (data) => {
-      let token = data.data;
+  await token.token().then(async (data) => {
+    let token = data.data;
 
-      //get a token then use it to make request
-      await collections.momoStatus(token["access_token"], number).then((status) => {
-        res.json({
-          status: status.data["result"],
-          phone: number,
-        });
-      }).catch((err) => {
-        console.log(err.message);
-      });
+    //get a token then use it to make request
+    await collections.momoStatus(token["access_token"], number).then((status) => {
+      res.json({ status: status.data["result"], phone: number, });
     }).catch((err) => {
       console.log(err.message);
     });
+  }).catch((err) => {
+    console.log(err.message);
+  });
 });
 
 // transfer to account on app from momo
@@ -1842,153 +1790,133 @@ setInterval(async () => {
         });
 
         //let status = dt.data["status"]
-        await disbursment
-          .transferStatus(xxid, token)
-          .then(async (status) => {
-            if (status === undefined) {
-              return;
+        await disbursment.transferStatus(xxid, token).then(async (status) => {
+          if (status === undefined) {
+            return;
+          }
+
+          //check
+          if (status.data["status"] === "FAILED") {
+            // update database when the transaction failed
+            await disbursment.updateTransferRequest(2, token, xxid);
+          }
+
+          //check if the trasaction was a successs
+          if (status.data["status"] === "SUCCESSFUL") {
+            //update database to show that request was succesfully
+            await disbursment.updateTransferRequest(1, token, xxid);
+
+            //send sms to client
+
+            let message;
+            let thirdpartyMessage;
+
+            if (thirdpartyNumber !== "12345678") {
+              thirdpartyMessage = "You have received SZL" + amount + " MTN MoMo from " + thirdpartyNumber + " at " + time.getTime() + ". Ref: SCBS" + No + " Contact Center: 24171975";
+              //You have received SZL480.00-MTN MoMo from 7612 9356 Transaction ID: SCBS 2334556 on 10/10/23 12:34:28 helpline 2417 1975
+              message = "Your Acc xxx" + accountNo.slice(5) + " has been debited with SZL" + amount + " on " + time.getTime() + ". Ref: " + No + " Contact Center: 24171975";
+            } else {
+              message =
+                "Your Acc xxx" +
+                accountNo.slice(5) +
+                " has been debited with SZL" +
+                amount +
+                " on " +
+                time.getTime() +
+                ". Ref: " +
+                No +
+                " Contact Center: 24171975";
             }
 
-            //check
-            if (status.data["status"] === "FAILED") {
-              // update database when the transaction failed
-              await disbursment.updateTransferRequest(2, token, xxid);
-            }
+            //withdraw from Musoni
+            await disbursment
+              .makeWithdrawal(amount, accountNo, phone, time.myDate(newDate))
+              .then(async (wdata) => {
+                //console.log(wdata)
+                if (wdata.data !== undefined) {
+                  //console.log(wdata.data)
 
-            //check if the trasaction was a successs
-            if (status.data["status"] === "SUCCESSFUL") {
-              //update database to show that request was succesfully
-              await disbursment.updateTransferRequest(1, token, xxid);
-
-              //send sms to client
-
-              let message;
-              let thirdpartyMessage;
-
-              if (thirdpartyNumber !== "12345678") {
-                thirdpartyMessage =
-                  "You have received SZL" +
-                  amount +
-                  " MTN MoMo from " +
-                  thirdpartyNumber +
-                  " at " +
-                  time.getTime() +
-                  ". Ref: SCBS" +
-                  No +
-                  " Contact Center: 24171975";
-                //You have received SZL480.00-MTN MoMo from 7612 9356 Transaction ID: SCBS 2334556 on 10/10/23 12:34:28 helpline 2417 1975
-                message =
-                  "Your Acc xxx" +
-                  accountNo.slice(5) +
-                  " has been debited with SZL" +
-                  amount +
-                  " on " +
-                  time.getTime() +
-                  ". Ref: " +
-                  No +
-                  " Contact Center: 24171975";
-              } else {
-                message =
-                  "Your Acc xxx" +
-                  accountNo.slice(5) +
-                  " has been debited with SZL" +
-                  amount +
-                  " on " +
-                  time.getTime() +
-                  ". Ref: " +
-                  No +
-                  " Contact Center: 24171975";
-              }
-
-              //withdraw from Musoni
-              await disbursment
-                .makeWithdrawal(amount, accountNo, phone, time.myDate(newDate))
-                .then(async (wdata) => {
-                  //console.log(wdata)
-                  if (wdata.data !== undefined) {
-                    //console.log(wdata.data)
-
-                    // withdraw from the 000004257
-                    await disbursment
-                      .makeWithdrawal(
-                        amount,
-                        "000004257",
-                        phone,
-                        time.myDate(newDate)
-                      )
-                      .then((indata) => {
-                        if (indata.data !== undefined) {
-                          //console.log(wdata.data)
-                        }
-                      })
-                      .catch((err) => {
-                        console.log(err.message);
-                      });
-
-                    // sending sms to third party customer
-                    if (thirdpartyNumber !== "12345678") {
-                      await sms.sendMessage(phone, thirdpartyMessage); //phone is for third party since we saved as the contact it was directed to
-                      await sms.sendMessage(thirdpartyNumber, message);
-                    } else {
-                      await sms.sendMessage(phone, message);
-                    }
-
-                    //post sms charge
-                    await sms
-                      .smsCharge(accountNo, time.myDate(newDate))
-                      .then(async (paySms) => {
-                        // pay sms charge
-                        let data = paySms.data;
-                        let resourceID = data["resourceId"];
-
-                        //pay sms charge
-                        await disbursment
-                          .payCharge(
-                            accountNo,
-                            resourceID,
-                            0.95,
-                            time.myDate(newDate)
-                          )
-                          .then((tt) => {
-                            //console.log(tt)
-                          });
-                      });
-                  }
-
-                  //create momo charge
+                  // withdraw from the 000004257
                   await disbursment
-                    .payMoMoCharge(
-                      accountNo,
-                      disbursment.disbursememtCharge(
-                        parseFloat(amount).toFixed(2)
-                      ),
+                    .makeWithdrawal(
+                      amount,
+                      "000004257",
+                      phone,
                       time.myDate(newDate)
                     )
-                    .then(async (payMoMo) => {
-                      let data = payMoMo.data;
+                    .then((indata) => {
+                      if (indata.data !== undefined) {
+                        //console.log(wdata.data)
+                      }
+                    })
+                    .catch((err) => {
+                      console.log(err.message);
+                    });
 
-                      var resourceID = data["resourceId"];
+                  // sending sms to third party customer
+                  if (thirdpartyNumber !== "12345678") {
+                    await sms.sendMessage(phone, thirdpartyMessage); //phone is for third party since we saved as the contact it was directed to
+                    await sms.sendMessage(thirdpartyNumber, message);
+                  } else {
+                    await sms.sendMessage(phone, message);
+                  }
 
-                      // pay charge created
+                  //post sms charge
+                  await sms
+                    .smsCharge(accountNo, time.myDate(newDate))
+                    .then(async (paySms) => {
+                      // pay sms charge
+                      let data = paySms.data;
+                      let resourceID = data["resourceId"];
+
+                      //pay sms charge
                       await disbursment
                         .payCharge(
                           accountNo,
                           resourceID,
-                          disbursment
-                            .disbursememtCharge(parseFloat(amount))
-                            .toFixed(2),
+                          0.95,
                           time.myDate(newDate)
                         )
                         .then((tt) => {
                           //console.log(tt)
                         });
                     });
-                })
-                .catch((err) => {
-                  console.log(err.message);
-                });
-            }
-          })
+                }
+
+                //create momo charge
+                await disbursment
+                  .payMoMoCharge(
+                    accountNo,
+                    disbursment.disbursememtCharge(
+                      parseFloat(amount).toFixed(2)
+                    ),
+                    time.myDate(newDate)
+                  )
+                  .then(async (payMoMo) => {
+                    let data = payMoMo.data;
+
+                    var resourceID = data["resourceId"];
+
+                    // pay charge created
+                    await disbursment
+                      .payCharge(
+                        accountNo,
+                        resourceID,
+                        disbursment
+                          .disbursememtCharge(parseFloat(amount))
+                          .toFixed(2),
+                        time.myDate(newDate)
+                      )
+                      .then((tt) => {
+                        //console.log(tt)
+                      });
+                  });
+              })
+              .catch((err) => {
+                console.log(err.message);
+              });
+          }
+        })
           .catch((err) => {
             console.log(err.message);
           });

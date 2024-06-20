@@ -2,7 +2,7 @@ const dotenv = require('dotenv');
 const db = require('../../db/database')
 const { default: axios } = require('axios');
 const headersMusoni = require("../modal/header")
-const accounts = require("../modal/accounts")
+//const accounts = require("../modal/accounts")
 const dateTime = require("../modal/datetime");
 
 dotenv.config();
@@ -144,4 +144,4 @@ let payCharge = async (accountNo, chargeid, amount, date) => {
 
 
 
-module.exports = { calculateQuickLoanAmount, saveQuickLoan, getQuickLoan , createQuickLoanCharge , payCharge }
+module.exports = { calculateQuickLoanAmount, saveQuickLoan, getQuickLoan, createQuickLoanCharge, payCharge }
