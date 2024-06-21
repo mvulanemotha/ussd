@@ -28,7 +28,7 @@ app.use((req, res, next) => {
 app.use(express.json())
 
 app.use('/ussd', ussd)
-app.use('/salaries', salaries)
+app.use('/ussd/salaries', salaries)
 
 // handling errors if none of the routes were accessed
 app.use((req, res, next) => {
