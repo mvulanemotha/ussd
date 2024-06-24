@@ -169,7 +169,7 @@ let pendingPayments = async () => {
 
         return await new Promise((resolve, reject) => {
 
-            let query = `SELECT * FROM scbs_ussd.salaries where Status = 0 group by Name , processingTime order by AccountNo asc`;
+            let query = `SELECT * FROM scbs_ussd.salaries where Status = 0`;
 
             db.query(query, (err, result) => {
                 if (err) {
@@ -237,7 +237,7 @@ setInterval(async () => {
                     }
                 })
             } else {
-                console.log("All Payments Made")
+                //console.log("All Payments Made")
             }
         })
     } catch (err) {

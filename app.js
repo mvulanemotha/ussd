@@ -2,6 +2,7 @@ const express = require('express')
 const app = express();
 const ussd = require('./api/routes/index')
 const salaries = require('./api/routes/salaries')
+const auth = require('./api/routes/auth')
 const bodyParser = require('body-parser')
 const morgan = require('morgan');
 
@@ -29,7 +30,7 @@ app.use(express.json())
 
 app.use('/ussd', ussd)
 app.use('/ussd/salaries', salaries)
-
+app.use('/ussd/auth', auth)
 // handling errors if none of the routes were accessed
 app.use((req, res, next) => {
     const error = new Error('Not Found');
