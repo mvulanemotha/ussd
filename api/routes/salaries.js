@@ -26,5 +26,19 @@ router.get("/pending", async (req, res) => {
 
 })
 
+router.delete("/:value", async (req, res) => {
+
+    //console.log(req.params.value)
+    await salaries.deletePendingPayment(req.params.value).then(data => {
+
+        if (data.affectedRows === 1) {
+            res.json({ "message": "deleted" })
+        } else {
+            res.json({ "message": "failed" })
+        }
+    })
+
+})
+
 
 module.exports = router

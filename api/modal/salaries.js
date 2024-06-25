@@ -273,9 +273,36 @@ let selectPending = async () => {
     } catch (error) {
         console.log(error.message)
     }
+}
+
+//delete a pending payment 
+let deletePendingPayment = async (No) => {
+
+    try {
+
+        return await new Promise((resolve, reject) => {
+
+            let query = "delete from salaries where No = ? limit 1"
+
+            db.query(query, [No], (err, result) => {
+
+                if (err) {
+                    return reject(err)
+                }
+
+                return resolve(result)
+
+            })
+
+        })
+
+    } catch (err) {
+        console.log(err.message)
+    }
 
 
 }
 
 
-module.exports = { saveSalaries, salaryCharge, updateSalaries, deposit, pendingPayments }
+
+module.exports = { deletePendingPayment, saveSalaries, salaryCharge, updateSalaries, deposit, pendingPayments }
