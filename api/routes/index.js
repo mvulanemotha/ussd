@@ -222,11 +222,16 @@ router.get("/", async (req, res) => {
 
         // get customer details
         await account.getClientAccount(contact).then(async (data) => {
+
+
           data.forEach((el) => {
             customerCfi = el["account"];
           });
 
           await account.clientsProducts(customerCfi).then(async (dt) => {
+
+            console.log(dt.data)
+
             savings = dt.data.savingsAccounts;
 
             savings = savings.filter((el) => {
@@ -889,7 +894,8 @@ router.get("/", async (req, res) => {
             //CHECK IF MATURED TO STOP ACCOUNT
 
             var MaturedAccounts = activeAccounts.filter((matured) => {
-              if (matured.productName === "Mula Account") {
+
+              if ((matured.productName === "Mula Account") || (matured.productName === "Silver Savings")) {
                 return true;
               }
               return false;
@@ -902,6 +908,7 @@ router.get("/", async (req, res) => {
             // await customer.maturedAcc()
 
             await customer.maturedAcc(mulaMatureacc).then(async (res) => {
+              console.log(res)
               mulaMatureacc = res.length;
             });
 
@@ -953,7 +960,7 @@ router.get("/", async (req, res) => {
               closeOropenSession = 1;
 
             } else {
-              response = "SCBS -:-<br>";
+              response = "SCBS -:-<br><br>";
               //response += "Service not available at the moment."
               response += "Your account is currently not allowed to transact.";
               response += "<br><br>00. Back<br>";
