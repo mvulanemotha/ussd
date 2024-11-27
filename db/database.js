@@ -20,5 +20,12 @@ const database = mysql.createPool({
 });
 
 
+/*
+console.log(process.env.passwordDB)
+console.log(process.env.databaseDB)
+console.log(process.env.hostDB)
+console.log(process.env.portDB)
+console.log(process.env.usernameDB)
+*/
 module.exports = database;
 

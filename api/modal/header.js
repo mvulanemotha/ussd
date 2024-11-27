@@ -7,7 +7,7 @@ let headersMusoni = () => {
 
   //let apiKey = 'uUUnYBrEJ48mp2JoM8Jni7yIf8JDRP1N7mZvUTmO' 
   let apiKey = process.env.key //'G1ApOPzYok3CnSupBeBMfRMXEFxHVMT5DaFc5854'
-  let username = process.env.User  //'Status Capital API'
+  let username = process.env.User //'Status Capital API'
   let password = process.env.Password // 'Status12345'
 
 

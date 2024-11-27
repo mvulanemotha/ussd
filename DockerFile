@@ -1,12 +1,13 @@
 
 #nodejs image
-FROM node:18
+FROM node:20.16-alpine3.19
 
 # setting my linux working directory
-WORKDIR /usr/src/ussd
+WORKDIR /ussd
 
 # Copy the package.json file to be use by node package manager
 COPY package*.json ./
+
 
 # Intall application dependecies
 RUN npm install
@@ -15,9 +16,9 @@ RUN npm install
 COPY . .
 
 # Expose the port the app is running on
-EXPOSE  8887
+EXPOSE  8888
 
-CMD [ "node" , "node server.js" ]
+CMD [ "node" , "server.js" ]
 
 
 

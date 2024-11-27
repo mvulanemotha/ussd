@@ -1,0 +1,52 @@
+version: '3.8'
+
+networks:
+  ussd_network:  # Define the custom network
+    driver: bridge
+
+services:
+  # Node.js service
+  app:
+    build: .
+    container_name: ussd
+    networks:
+      - ussd_network
+    ports:
+      - "8888:8888"  # Map port 8888
+    env_file:
+      - .env  # Load all variables from .env
+    #environment:
+    #  - databaseDB=${databaseDB}
+    #  - usernameDB=${usernameDB}
+    #  - passwordDB=${passwordDB} 
+    #  - portDB=${portDB}
+    #  - hostDB=${hostDB}
+    depends_on:
+      db:
+        condition: service_healthy
+         
+  # MySQL service
+  db:
+    image: mysql:8.0
+    container_name: ussd_database
+    networks:
+      - ussd_network
+    environment:
+      MYSQL_USER: ${usernameDB}
+      MYSQL_ROOT_PASSWORD: ${passwordDB}
+      MYSQL_DATABASE: ${databaseDB}
+      MYSQL_PASSWORD: ${passwordDB}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"  # Map port 3306 in container to 3307 on the host
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "db"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  mysql-data:
